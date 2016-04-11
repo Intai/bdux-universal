@@ -20,6 +20,12 @@ const isNotIsomorphicAction = R.pipe(
   R.not
 );
 
+const shouldRecord = R.allPass([
+  R.complement(Common.canUseDOM),
+  isNotIsomorphicAction,
+  isNotIsomorphicStore
+]);
+
 const pushRecord = (record) => {
   recordStream.push(record);
 };
@@ -52,26 +58,8 @@ const onceThenNull = (func) => {
   );
 };
 
-const loadStates = () => {
-  let element = document.getElementById('isomorphic');
-  return (element && JSON.parse(element.innerHTML)) || [];
-};
-
-const mapInitRecords = (records) => (
-  (new Bacon.Bus()).startWith({
-    type: ActionTypes.ISOMORPHIC_INIT,
-    records: records
-  })
-  .first()
-);
-
 const recordsProperty = recordStream
   .scan([], accumRecords);
-
-const createInit = R.pipe(
-  loadStates,
-  mapInitRecords
-);
 
 const createStartStream = () => (
   // create an action when records change.
@@ -90,22 +78,21 @@ export const start = onceThenNull(R.ifElse(
   R.F
 ));
 
-export const resume = R.ifElse(
-  Common.canUseDOM,
-  createInit,
-  R.F
-);
-
 export const record = R.ifElse(
   // dont record isomorphic related store state.
-  R.allPass([isNotIsomorphicAction, isNotIsomorphicStore]),
+  shouldRecord,
   // record the store state.
   pushRecord,
   R.F
 );
 
+export const loadStates = R.once(() => {
+  // states recorded on server side.
+  let element = document.getElementById('isomorphic');
+  return (element && JSON.parse(element.innerHTML)) || [];
+});
+
 export default bindToDispatch({
   start,
-  resume,
   record
 });
