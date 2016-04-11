@@ -1,6 +1,8 @@
 import R from 'ramda';
 import React from 'react';
+import Common from '../utils/common-util';
 import IsomorphicStore from '../stores/isomorphic-store';
+import { loadStates } from '../actions/isomorphic-action';
 import { createComponent } from 'bdux'
 
 const hasRecords = R.allPass([
@@ -12,9 +14,16 @@ const stringifyRecords = (states) => (
   JSON.stringify(states.records)
 );
 
-const renderStates = R.when(
+const stringifyStatesInDOM = R.ifElse(
+  Common.canUseDOM,
+  R.pipe(loadStates, JSON.stringify),
+  R.always('[]')
+);
+
+const renderStates = R.ifElse(
   hasRecords,
-  stringifyRecords
+  stringifyRecords,
+  stringifyStatesInDOM
 );
 
 export const IsomorphicStates = ({ states }) => (

@@ -29,9 +29,6 @@ const getOutputStream = (reducerStream) => (
   reducerStream
     .map(getRecords)
     .map(R.prop('state'))
-    .map(R.defaultTo({
-      records: []
-    }))
 );
 
 export const getReducer = () => {
