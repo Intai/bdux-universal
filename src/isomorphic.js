@@ -22,7 +22,7 @@ const mergeState = (args, record) => (
     : args
 );
 
-const mapIsomorphicStates = R.converge(
+const mergeStates = R.converge(
   mergeState, [
     R.identity,
     findRecord
@@ -40,7 +40,46 @@ const shouldResume = R.allPass([
 
 const mapResumeState = R.when(
   shouldResume,
-  mapIsomorphicStates
+  mergeStates
+);
+
+const getPostOutputStream = (postStream) => (
+  postStream
+    // record store states.
+    .doAction(IsomorphicAction.record)
+);
+
+const findRecordToStartWith = R.converge(
+  findRecordByName, [
+    R.nthArg(0),
+    loadStates
+  ]
+);
+
+const addStartWithRecord = (record, outputStream) => (
+  (record)
+    ? outputStream.startWith(record)
+    : outputStream
+);
+
+const addStartWithToOutput = R.converge(
+  addStartWithRecord, [
+    findRecordToStartWith,
+    R.nthArg(1)
+  ]
+);
+
+const startWithResumeState = R.ifElse(
+  Common.canUseDOM,
+  addStartWithToOutput,
+  R.nthArg(1)
+);
+
+const getPostOutput = R.converge(
+  startWithResumeState, [
+    R.nthArg(0),
+    R.pipe(R.nthArg(1), getPostOutputStream)
+  ]
 );
 
 export const getPreReduce = () => {
@@ -54,7 +93,7 @@ export const getPreReduce = () => {
   };
 };
 
-export const getPostReduce = () => {
+export const getPostReduce = (name) => {
   let postStream = new Bacon.Bus();
 
   // start recording on server.
@@ -62,8 +101,6 @@ export const getPostReduce = () => {
 
   return {
     input: postStream,
-    output: postStream
-      // record store states.
-      .doAction(IsomorphicAction.record)
+    output: getPostOutput(name, postStream)
   };
 };
