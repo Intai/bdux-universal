@@ -1,8 +1,8 @@
 import R from 'ramda';
 import React from 'react';
 import Common from '../utils/common-util';
-import IsomorphicStore from '../stores/isomorphic-store';
-import { loadStates } from '../actions/isomorphic-action';
+import UniversalStore from '../stores/universal-store';
+import { loadStates } from '../actions/universal-action';
 import { createComponent } from 'bdux'
 
 const hasRecords = R.allPass([
@@ -26,12 +26,12 @@ const renderStates = R.ifElse(
   stringifyStatesInDOM
 );
 
-export const IsomorphicStates = ({ states }) => (
-  <script id="isomorphic" type="application/json"
+export const UniversalStates = ({ states }) => (
+  <script id="universal" type="application/json"
     dangerouslySetInnerHTML={{ __html: renderStates(states) }}>
   </script>
 );
 
-export default createComponent(IsomorphicStates, {
-  states: IsomorphicStore
+export default createComponent(UniversalStates, {
+  states: UniversalStore
 });

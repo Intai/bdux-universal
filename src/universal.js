@@ -3,8 +3,8 @@ import Bacon from 'baconjs';
 import Common from './utils/common-util';
 import StoreNames from './stores/store-names';
 import ActionTypes from './actions/action-types';
-import IsomorphicAction from './actions/isomorphic-action';
-import { loadStates } from './actions/isomorphic-action';
+import UniversalAction from './actions/universal-action';
+import { loadStates } from './actions/universal-action';
 
 const findRecordByName = (name, records) => (
   R.find(R.propEq('name', name), records || [])
@@ -13,7 +13,7 @@ const findRecordByName = (name, records) => (
 const getPostOutputStream = (postStream) => (
   postStream
     // record store states.
-    .doAction(IsomorphicAction.record)
+    .doAction(UniversalAction.record)
 );
 
 const findRecordToStartWith = R.converge(
@@ -62,7 +62,7 @@ export const getPostReduce = (name) => {
   let postStream = new Bacon.Bus();
 
   // start recording on server.
-  IsomorphicAction.start();
+  UniversalAction.start();
 
   return {
     input: postStream,

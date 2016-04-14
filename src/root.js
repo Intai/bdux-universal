@@ -1,5 +1,5 @@
 import R from 'ramda';
-import IsomorphicStore from './stores/isomorphic-store';
+import UniversalStore from './stores/universal-store';
 import { renderToString } from 'react-dom/server';
 
 const subscribe = (store) => (
@@ -25,7 +25,7 @@ const activateStores = R.pipe(
 const wrapStores = (stores, render, ...args) => {
   // activate stores before rendering.
   let dispose = activateStores(R.merge(stores, {
-    isomorphic: IsomorphicStore
+    universal: UniversalStore
   }));
 
   // render to html.

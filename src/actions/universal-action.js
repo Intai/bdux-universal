@@ -7,18 +7,18 @@ import { bindToDispatch } from 'bdux';
 
 const recordStream = new Bacon.Bus();
 
-const isNotIsomorphicStore = R.complement(
-  R.propEq('name', StoreNames.ISOMORPHIC)
+const isNotUniversalStore = R.complement(
+  R.propEq('name', StoreNames.UNIVERSAL)
 );
 
-const isNotIsomorphicAction = R.complement(
-  R.pathEq(['action', 'type'], ActionTypes.ISOMORPHIC_RECORDS)
+const isNotUniversalAction = R.complement(
+  R.pathEq(['action', 'type'], ActionTypes.UNIVERSAL_RECORDS)
 );
 
 const shouldRecord = R.allPass([
   R.complement(Common.canUseDOM),
-  isNotIsomorphicAction,
-  isNotIsomorphicStore
+  isNotUniversalAction,
+  isNotUniversalStore
 ]);
 
 const pushRecord = (record) => {
@@ -59,7 +59,7 @@ const recordsProperty = recordStream
 const createStartStream = () => (
   // create an action when records change.
   Bacon.combineTemplate({
-    type: ActionTypes.ISOMORPHIC_RECORDS,
+    type: ActionTypes.UNIVERSAL_RECORDS,
     records: recordsProperty,
     skipLog: true
   })
@@ -74,7 +74,7 @@ export const start = onceThenNull(R.ifElse(
 ));
 
 export const record = R.ifElse(
-  // dont record isomorphic related store state.
+  // dont record universal related store state.
   shouldRecord,
   // record the store state.
   pushRecord,
@@ -83,7 +83,7 @@ export const record = R.ifElse(
 
 export const loadStates = R.once(() => {
   // states recorded on server side.
-  let element = document.getElementById('isomorphic');
+  let element = document.getElementById('universal');
   return (element && JSON.parse(element.innerHTML)) || [];
 });
 

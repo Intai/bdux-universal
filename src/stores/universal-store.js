@@ -5,7 +5,7 @@ import StoreNames from '../stores/store-names';
 import { createStore } from 'bdux';
 
 const isRecords =  R.pathEq(
-  ['action', 'type'], ActionTypes.ISOMORPHIC_RECORDS
+  ['action', 'type'], ActionTypes.UNIVERSAL_RECORDS
 );
 
 const mergeState = (name, func) => (
@@ -41,5 +41,5 @@ export const getReducer = () => {
 };
 
 export default createStore(
-  StoreNames.ISOMORPHIC, getReducer
+  StoreNames.UNIVERSAL, getReducer
 );

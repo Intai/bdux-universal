@@ -1,5 +1,5 @@
 {
-  "name": "bdux-isomorphic",
+  "name": "bdux-universal",
   "version": "0.1.0",
   "description": "A Bdux Middleware",
   "main": "lib/main.js",
@@ -9,10 +9,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:Intai/bdux-isomorphic.git"
+    "url": "git@github.com:Intai/bdux-universal.git"
   },
   "keywords": [
-    "bdux-isomorphic",
+    "bdux-universal",
+    "isomorphic",
     "middleware",
     "bdux",
     "flux",
@@ -24,9 +25,9 @@
   "author": "Intai",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Intai/bdux-isomorphic/issues"
+    "url": "https://github.com/Intai/bdux-universal/issues"
   },
-  "homepage": "https://github.com/Intai/bdux-isomorphic",
+  "homepage": "https://github.com/Intai/bdux-universal",
   "dependencies": {
     "classnames": "^2.2.3",
     "ramda": "^0.19.1"
