@@ -11,13 +11,8 @@ const isNotIsomorphicStore = R.complement(
   R.propEq('name', StoreNames.ISOMORPHIC)
 );
 
-const isNotIsomorphicAction = R.pipe(
-  R.path(['action', 'type']),
-  R.flip(R.contains)([
-    ActionTypes.ISOMORPHIC_RECORDS,
-    ActionTypes.ISOMORPHIC_INIT
-  ]),
-  R.not
+const isNotIsomorphicAction = R.complement(
+  R.pathEq(['action', 'type'], ActionTypes.ISOMORPHIC_RECORDS)
 );
 
 const shouldRecord = R.allPass([
