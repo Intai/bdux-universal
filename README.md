@@ -12,5 +12,28 @@ To install as an [npm](https://www.npmjs.com/) package:
 npm install --save bdux-universal
 ```
 
+## Usage
+``` javascript
+import * as Universal from 'bdux-universal';
+import { applyMiddleware } from 'bdux';
+
+applyMiddleware(
+  Universal
+);
+```
+Then place `<UniversalStates />` in root component to render serialised states.
+``` javascript
+import React from 'react';
+import { UniversalStates } from 'bdux-universal';
+
+const App = () => (
+  <div>
+    <UniversalStates />
+  </div>
+);
+
+export default App;
+```
+
 ## License
 [The ISC License](./LICENSE.md)
