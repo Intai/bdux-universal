@@ -1,4 +1,5 @@
 import R from 'ramda';
+import Bacon from 'baconjs';
 import UniversalStore from './stores/universal-store';
 import { renderToString } from 'react-dom/server';
 
@@ -22,6 +23,31 @@ const activateStores = R.pipe(
   pipeFuncs
 );
 
+const renderObservable = (observable) => (
+  observable.first()
+    .map(renderToString)
+);
+
+const renderElement = R.ifElse(
+  R.is(Bacon.Observable),
+  // render the first value to a string.
+  renderObservable,
+  // render to a string.
+  renderToString
+);
+
+const doActionDispose = (observable, dispose) => (
+  observable.doAction(dispose)
+);
+
+const doAction = R.ifElse(
+  R.is(Bacon.Observable),
+  // dispose as side effect of the stream.
+  doActionDispose,
+  // call dispose function.
+  R.pipe(R.nthArg(1), R.call)
+);
+
 const wrapStores = (stores, render, ...args) => {
   // activate stores before rendering.
   let dispose = activateStores(R.merge(stores, {
@@ -31,7 +57,7 @@ const wrapStores = (stores, render, ...args) => {
   // render to html.
   let html = R.apply(render, args);
   // dipose store subscriptions.
-  dispose();
+  doAction(html, dispose)
 
   return html;
 };
@@ -41,8 +67,8 @@ export const createRoot = (createElement, stores = {}) => ({
     R.pipe(
       // create component element.
       createElement,
-      // render to a string.
-      renderToString
+      // render the element.
+      renderElement
     ),
     // activate stores before rendering.
     R.partial(wrapStores, [stores])
