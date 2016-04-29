@@ -69,5 +69,53 @@ export default createRoot(
 ```
 Please checkout [Universal](https://github.com/Intai/bdux-examples/tree/master/universal) for a example setup with [Express](http://expressjs.com/) and [webpack](https://webpack.github.io/).
 
+## Asynchronous server rendering
+Server Root can be created using `createAsyncRoot(createAsyncActions, createElement, stores = {})`.
+- `createAsyncActions` is a function to create a [Bacon](https://baconjs.github.io/) stream which produce a single array of asynchronous actions.
+- `createElement` is a function to create the application root element.
+- `stores` is an object of dependent stores.
+
+Then use `renderToString` function to render the application into an HTML string through [ReactDOMServer](https://facebook.github.io/react/docs/top-level-api.html#reactdomserver.rendertostring) asynchronously.
+``` javascript
+let dispose = root.renderToString(req, res)
+  .map(renderHtml(res))
+  .onValue(() => dispose());
+```
+
+Example of an asynchronous server root:
+``` javascript
+import R from 'ramda';
+import React from 'react';
+import Bacon from 'baconjs';
+import App from '../components/app-react';
+import WeatherAction from '../actions/weather-action';
+import WeatherStore from '../stores/weather-store';
+import CountryCodesAction from '../actions/country-codes-action';
+import CountryCodesStore from '../stores/country-codes-store';
+import { createAsyncRoot } from 'bdux-universal';
+
+export const createAsyncActions = () => (
+  Bacon.when([
+    CountryCodesAction.load(),
+    WeatherAction.searchWeather('NZ', 'Auckland').last()
+  ],
+  // map arguments to an array.
+  R.unapply(R.identity))
+);
+
+export const createElement = () => (
+  <App />
+);
+
+export default createAsyncRoot(
+  createAsyncActions,
+  createElement, {
+    countryCodes: CountryCodesStore,
+    weather: WeatherStore
+  }
+);
+```
+Please checkout [Async](https://github.com/Intai/bdux-examples/tree/master/async) for a example setup with [Express](http://expressjs.com/) and [webpack](https://webpack.github.io/).
+
 ## License
 [The ISC License](./LICENSE.md)
