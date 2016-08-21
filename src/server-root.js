@@ -1,42 +1,47 @@
-import R from 'ramda';
-import Bacon from 'baconjs';
-import UniversalStore from './stores/universal-store';
-import { renderToString } from 'react-dom/server';
-import { getActionStream } from 'bdux';
+import R from 'ramda'
+import Bacon from 'baconjs'
+import UniversalStore from './stores/universal-store'
+import { renderToString } from 'react-dom/server'
+import { getActionStream } from 'bdux'
 
 const subscribe = (store) => (
   // subscribe to a store.
   store.getProperty().onValue()
-);
+)
+
+const hasFuncs = R.allPass([
+  R.is(Array),
+  R.complement(R.isEmpty)
+])
 
 const pipeFuncs = R.ifElse(
-  R.isEmpty,
-  R.always(),
-  R.apply(R.pipe)
-);
+  hasFuncs,
+  R.apply(R.pipe),
+  R.always(R.F)
+)
 
 const activateStores = R.pipe(
+  // get the array of stores.
+  R.values,
   // subscribe to stores.
   R.map(subscribe),
-  // get the array of dispose functions.
-  R.values,
   // pipe all dispose functions.
   pipeFuncs
-);
+)
 
 const wrapStores = (stores, render, ...args) => {
   // activate stores before rendering.
-  let dispose = activateStores(R.merge(stores, {
+  const dispose = activateStores(R.merge(stores, {
     universal: UniversalStore
-  }));
+  }))
 
   // render to html.
-  let html = R.apply(render, args);
+  const html = R.apply(render, args)
   // dipose store subscriptions.
-  dispose();
+  dispose()
 
-  return html;
-};
+  return html
+}
 
 const renderElement = (createElement, stores) => (
   R.wrap(
@@ -49,12 +54,12 @@ const renderElement = (createElement, stores) => (
     // activate stores before rendering.
     R.partial(wrapStores, [stores])
   )
-);
+)
 
 const pushActions = (args, actions) => {
-  R.forEach(getActionStream().push, actions);
-  return args;
-};
+  getActionStream().plug(Bacon.fromArray(actions))
+  return args
+}
 
 const renderAsyncElement = (createElement, stores) => (
   R.curryN(2, R.wrap(
@@ -69,19 +74,19 @@ const renderAsyncElement = (createElement, stores) => (
     // activate stores before rendering.
     R.partial(wrapStores, [stores])
   ))
-);
+)
 
 const mapAsyncToString = (asyncStream, renderElement) => (
   asyncStream
     .map(renderElement)
     .first()
-);
+)
 
 export const createRoot = (createElement, stores = {}) => ({
   renderToString:
     // create and render the element.
     renderElement(createElement, stores)
-});
+})
 
 export const createAsyncRoot = (createAsyncActions, createElement, stores = {}) => ({
   renderToString: R.converge(
@@ -96,4 +101,4 @@ export const createAsyncRoot = (createAsyncActions, createElement, stores = {}) 
       )
     ]
   )
-});
+})
