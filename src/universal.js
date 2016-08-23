@@ -6,6 +6,10 @@ import ActionTypes from './actions/action-types'
 import UniversalAction from './actions/universal-action'
 import { loadStates } from './actions/universal-action'
 
+const canUseDOM = () => (
+  Common.canUseDOM()
+)
+
 const findRecordByName = (name, records) => (
   R.find(R.propEq('name', name), records || [])
 )
@@ -63,7 +67,7 @@ const mapRecordStateToOutput = R.converge(
 
 const mapResumeState = R.ifElse(
   // when on client.
-  Common.canUseDOM,
+  canUseDOM,
   // map the output stream to resume.
   mapRecordStateToOutput,
   // otherwise simply the input stream.
@@ -82,7 +86,7 @@ const addStartWithToOutput = R.converge(
 
 const startWithResumeState = R.ifElse(
   // when on client.
-  Common.canUseDOM,
+  canUseDOM,
   // add bacon startWith to the base output stream.
   addStartWithToOutput,
   // otherwise simply the base output stream.
