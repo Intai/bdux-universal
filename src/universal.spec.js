@@ -45,7 +45,7 @@ describe('Universal Middleware', () => {
       const pluggable = Universal.getPostReduce()
       const callback = sinon.stub()
       const value = {}
-      
+
       pluggable.output.onValue(callback)
       pluggable.input.push(value)
       chai.expect(callback.calledOnce).to.be.true
@@ -63,7 +63,7 @@ describe('Universal Middleware', () => {
       const pluggable = Universal.getPostReduce()
       const callback = sinon.stub()
       const value = {}
-      
+
       pluggable.output.onValue(callback)
       pluggable.input.push(value)
       chai.expect(UniversalAction.record.calledOnce).to.be.true
@@ -81,10 +81,10 @@ describe('Universal Middleware', () => {
     describe('with universal states', () => {
 
       beforeEach(() => {
-        const doc = jsdom(
-          '<html><body><script id="universal" type="application/json"> \
+        const doc = jsdom(' \
+          <script id="universal" type="application/json"> \
             [{"name":"test","nextState":"Message from Server"}] \
-          </script></body></html>')
+          </script>')
 
         global.document = doc
         global.window = doc.defaultView
@@ -99,6 +99,19 @@ describe('Universal Middleware', () => {
         chai.expect(callback.calledOnce).to.be.true
         chai.expect(callback.lastCall.args[0]).to.eql({
           state: 'Message from Server'
+        })
+      })
+
+      it('should only resume states once before reducer in browser', () => {
+        const pluggable = Universal.getPreReduce('test')
+        const callback = sinon.stub()
+
+        pluggable.output.onValue(callback)
+        pluggable.input.push({ state: null })
+        pluggable.input.push({ state: null })
+        chai.expect(callback.calledTwice).to.be.true
+        chai.expect(callback.lastCall.args[0]).to.eql({
+          state: null
         })
       })
 
@@ -123,6 +136,37 @@ describe('Universal Middleware', () => {
         chai.expect(callback.calledOnce).to.be.true
         chai.expect(callback.lastCall.args[0]).to.eql({
           state: 'Message'
+        })
+      })
+
+      it('should plug before multiple reducers in browser', () => {
+        const pluggable1 = Universal.getPreReduce('test')
+        const pluggable2 = Universal.getPreReduce('test')
+        const callback1 = sinon.stub()
+        const callback2 = sinon.stub()
+
+        pluggable1.output.onValue(callback1)
+        pluggable1.input.push({ state: null })
+        chai.expect(callback1.calledOnce).to.be.true
+        chai.expect(callback1.lastCall.args[0]).to.eql({
+          state: 'Message from Server'
+        })
+
+        pluggable2.output.onValue(callback2)
+        pluggable2.input.push({ state: null })
+        chai.expect(callback2.calledOnce).to.be.true
+        chai.expect(callback2.lastCall.args[0]).to.eql({
+          state: 'Message from Server'
+        })
+
+        pluggable1.input.push({ state: null })
+        chai.expect(callback1.lastCall.args[0]).to.eql({
+          state: null
+        })
+
+        pluggable2.input.push({ state: null })
+        chai.expect(callback2.lastCall.args[0]).to.eql({
+          state: null
         })
       })
 
