@@ -1,6 +1,7 @@
 import chai from 'chai'
 import sinon from 'sinon'
 import Bacon from 'baconjs'
+import { jsdom } from 'jsdom'
 import Common from './utils/common-util'
 import UniversalAction from './actions/universal-action'
 import * as Universal from './universal'
@@ -78,6 +79,39 @@ describe('Universal Middleware', () => {
     })
 
     describe('with universal states', () => {
+
+      beforeEach(() => {
+        const doc = jsdom(
+          '<html><body><script id="universal" type="application/json"> \
+            [{"name":"test","nextState":"Message from Server"}] \
+          </script></body></html>')
+
+        global.document = doc
+        global.window = doc.defaultView
+      })
+
+      it('should resume states before reducer in browser', () => {
+        const pluggable = Universal.getPreReduce('test')
+        const callback = sinon.stub()
+
+        pluggable.output.onValue(callback)
+        pluggable.input.push({ state: null })
+        chai.expect(callback.calledOnce).to.be.true
+        chai.expect(callback.lastCall.args[0]).to.eql({
+          state: 'Message from Server'
+        })
+      })
+
+      it('should resume unknown states before reducer in browser', () => {
+        const pluggable = Universal.getPreReduce('unknown')
+        const callback = sinon.stub()
+        const value = {}
+
+        pluggable.output.onValue(callback)
+        pluggable.input.push(value)
+        chai.expect(callback.calledOnce).to.be.true
+        chai.expect(callback.lastCall.args[0]).to.equal(value)
+      })
 
     })
 
