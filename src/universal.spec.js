@@ -102,15 +102,28 @@ describe('Universal Middleware', () => {
         })
       })
 
-      it('should resume unknown states before reducer in browser', () => {
+      it('should not resume unknown states before reducer in browser', () => {
         const pluggable = Universal.getPreReduce('unknown')
         const callback = sinon.stub()
-        const value = {}
 
         pluggable.output.onValue(callback)
-        pluggable.input.push(value)
+        pluggable.input.push({ state: null })
         chai.expect(callback.calledOnce).to.be.true
-        chai.expect(callback.lastCall.args[0]).to.equal(value)
+        chai.expect(callback.lastCall.args[0]).to.eql({
+          state: null
+        })
+      })
+
+      it('should not overwrite states before reducer in browser', () => {
+        const pluggable = Universal.getPreReduce('test')
+        const callback = sinon.stub()
+
+        pluggable.output.onValue(callback)
+        pluggable.input.push({ state: 'Message' })
+        chai.expect(callback.calledOnce).to.be.true
+        chai.expect(callback.lastCall.args[0]).to.eql({
+          state: 'Message'
+        })
       })
 
     })
