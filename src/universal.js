@@ -11,7 +11,7 @@ const canUseDOM = () => (
 )
 
 const findRecordByName = (name, records) => (
-  R.find(R.propEq('name', name), records || [])
+  R.find(R.propEq('name', name), records)
 )
 
 const getPostRecordStream = (postStream) => (

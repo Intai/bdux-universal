@@ -5,7 +5,6 @@ var gulp = require('gulp'),
     babel = require('babel-core/register'),
     spawn = require('child_process').spawn,
     srcFiles = './src/**/!(*.spec).js',
-    sassFiles = './src/**/*.scss',
     testFiles = './src/**/*.spec.js';
 
 gulp.task('clean', function () {
@@ -17,6 +16,7 @@ gulp.task('cover', function(cb) {
     'node_modules/istanbul/lib/cli.js',
     'cover',
     '--root', '.',
+    '-x', '**/*.spec.js',
     'node_modules/mocha/bin/_mocha',
     '--', '--opts', '.mocha.opts'
   ], {
@@ -44,19 +44,13 @@ gulp.task('babel', function() {
     .pipe(gulp.dest('lib'));
 });
 
-gulp.task('sass', function() {
-  return gulp.src(sassFiles)
-    .pipe(gulp.dest('lib'));
-});
-
 gulp.task('watch', function() {
   gulp.watch([srcFiles, testFiles], ['test']);
 });
 
 gulp.task('build', [
   'clean',
-  'babel',
-  'sass'
+  'babel'
 ]);
 
 gulp.task('default', [

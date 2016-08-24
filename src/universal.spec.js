@@ -170,9 +170,92 @@ describe('Universal Middleware', () => {
         })
       })
 
+      it('should start with states after reducer in browser', () => {
+        const pluggable = Universal.getPostReduce('test')
+        const callback = sinon.stub()
+
+        pluggable.output.toProperty({ nextState: null }).onValue(callback)
+        chai.expect(callback.calledTwice).to.be.true
+        chai.expect(callback.lastCall.args[0]).to.include({
+          nextState: 'Message from Server'
+        })
+      })
+
+      it('should not start with unknown states after reducer in browser', () => {
+        const pluggable = Universal.getPostReduce('unknown')
+        const callback = sinon.stub()
+
+        pluggable.output.toProperty({ nextState: null }).onValue(callback)
+        chai.expect(callback.calledOnce).to.be.true
+        chai.expect(callback.lastCall.args[0]).to.include({
+          nextState: null
+        })
+      })
+
     })
 
     describe('without universal states', () => {
+
+      beforeEach(() => {
+        const doc = jsdom('<html></html>')
+
+        global.document = doc
+        global.window = doc.defaultView
+      })
+
+      it('should not resume states before reducer in browser', () => {
+        const pluggable = Universal.getPreReduce('empty')
+        const callback = sinon.stub()
+
+        pluggable.output.onValue(callback)
+        pluggable.input.push({ state: null })
+        chai.expect(callback.calledOnce).to.be.true
+        chai.expect(callback.lastCall.args[0]).to.eql({
+          state: null
+        })
+      })
+
+      it('should plug before multiple reducers in browser', () => {
+        const pluggable1 = Universal.getPreReduce('empty')
+        const pluggable2 = Universal.getPreReduce('empty')
+        const callback1 = sinon.stub()
+        const callback2 = sinon.stub()
+
+        pluggable1.output.onValue(callback1)
+        pluggable1.input.push({ state: null })
+        chai.expect(callback1.calledOnce).to.be.true
+        chai.expect(callback1.lastCall.args[0]).to.eql({
+          state: null
+        })
+
+        pluggable2.output.onValue(callback2)
+        pluggable2.input.push({ state: null })
+        chai.expect(callback2.calledOnce).to.be.true
+        chai.expect(callback2.lastCall.args[0]).to.eql({
+          state: null
+        })
+
+        pluggable1.input.push({ state: 'Message' })
+        chai.expect(callback1.lastCall.args[0]).to.eql({
+          state: 'Message'
+        })
+
+        pluggable2.input.push({ state: 'Message' })
+        chai.expect(callback2.lastCall.args[0]).to.eql({
+          state: 'Message'
+        })
+      })
+
+      it('should not start with states after reducer in browser', () => {
+        const pluggable = Universal.getPostReduce('empty')
+        const callback = sinon.stub()
+
+        pluggable.output.toProperty({ nextState: null }).onValue(callback)
+        chai.expect(callback.calledOnce).to.be.true
+        chai.expect(callback.lastCall.args[0]).to.include({
+          nextState: null
+        })
+      })
 
     })
 

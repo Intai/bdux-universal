@@ -81,7 +81,7 @@ export const record = R.ifElse(
   R.F
 );
 
-export const loadStates = R.once(() => {
+export const loadStates = R.memoize(() => {
   // states recorded on server side.
   let element = document.getElementById('universal');
   return (element && JSON.parse(element.innerHTML)) || [];
