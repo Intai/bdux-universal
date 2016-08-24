@@ -4,7 +4,9 @@ import sinon from 'sinon'
 import React from 'react'
 import Bacon from 'baconjs'
 import UniversalStore from './stores/universal-store'
-import { createRoot } from './server-root'
+import {
+  createRoot,
+  createAsyncRoot } from './server-root'
 import {
   getActionStream,
   createStore,
@@ -20,12 +22,18 @@ const createPluggable = (log) => () => {
   }
 }
 
+const createAsyncActions = () => (
+  Bacon.once([])
+    .delay(1)
+)
+
 describe('Server Root', () => {
 
-  let sandbox, App
+  let sandbox, clock, App
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create()
+    clock = sinon.useFakeTimers(Date.now())
     App = sinon.stub().returns(false)
   })
 
@@ -100,7 +108,23 @@ describe('Server Root', () => {
     chai.expect(logReduce.called).to.be.false
   })
 
+  it('should create a async root to render to string', () => {
+    const root = createAsyncRoot(createAsyncActions, () => <App />)
+    chai.expect(root).to.have.property('renderToString')
+      .and.is.a('function')
+  })
+
+  it('should render asynchronously to html string', () => {
+    const callback = sinon.stub()
+    const root = createAsyncRoot(createAsyncActions, () => <App />)
+    root.renderToString().onValue(callback)
+    clock.tick(1)
+    chai.expect(callback.calledOnce).to.be.true
+    chai.expect(callback.lastCall.args[0]).to.match(/^<!--.*-->$/)
+  })
+
   afterEach(() => {
+    clock.restore()
     sandbox.restore()
   })
 
