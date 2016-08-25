@@ -23,7 +23,7 @@ const createPluggable = (log) => () => {
 }
 
 const createAsyncActions = () => (
-  Bacon.once([])
+  Bacon.once([{ type: 'test' }])
     .delay(1)
 )
 
@@ -121,6 +121,104 @@ describe('Server Root', () => {
     clock.tick(1)
     chai.expect(callback.calledOnce).to.be.true
     chai.expect(callback.lastCall.args[0]).to.match(/^<!--.*-->$/)
+  })
+
+  it('should dispatch an asynchronous action', () => {
+    const callback = sinon.stub()
+    const root = createAsyncRoot(createAsyncActions, () => <App />)
+    getActionStream().onValue(callback)
+    root.renderToString().onValue()
+    clock.tick(1)
+    chai.expect(callback.calledOnce).to.be.true
+    chai.expect(callback.lastCall.args[0]).to.eql({
+      type: 'test'
+    })
+  })
+
+  it('should dispatch multiple asynchronous actions', () => {
+    const callback = sinon.stub()
+    const createActions = () => Bacon.once([{ type: 'first' }, { type: 'second' }])
+    const root = createAsyncRoot(createActions, () => <App />)
+    getActionStream().onValue(callback)
+    root.renderToString().onValue()
+    chai.expect(callback.calledTwice).to.be.true
+    chai.expect(callback.lastCall.args[0]).to.eql({
+      type: 'second'
+    })
+  })
+
+  it('should receive all asynchronous actions at once', () => {
+    const callback = sinon.stub()
+    const createActions = () => Bacon.fromArray([[{ type: 'first' }], [{ type: 'second' }]])
+    const root = createAsyncRoot(createActions, () => <App />)
+    getActionStream().onValue(callback)
+    root.renderToString().onValue()
+    chai.expect(callback.calledOnce).to.be.true
+    chai.expect(callback.lastCall.args[0]).to.eql({
+      type: 'first'
+    })
+  })
+
+  it('should subscribe to stores to render asynchronously', () => {
+    const logReduce = sinon.stub()
+    const root = createAsyncRoot(createAsyncActions, () => <App />, {
+      test: createStore('name', createPluggable(logReduce))
+    })
+
+    root.renderToString().onValue()
+    clock.tick(1)
+    chai.expect(logReduce.calledOnce).to.be.true
+    chai.expect(logReduce.lastCall.args[0]).to.eql({
+      name: 'name',
+      state: null,
+      action: {
+        type: 'test'
+      }
+    })
+  })
+
+  it('should subscribe to universal store to render asynchronously', () => {
+    const logReduce = sinon.stub()
+    sandbox.stub(UniversalStore, 'getProperty').returns(
+      createStore('name', createPluggable(logReduce)).getProperty())
+
+    const root = createAsyncRoot(createAsyncActions, () => <App />)
+    root.renderToString().onValue()
+    clock.tick(1)
+    chai.expect(logReduce.calledOnce).to.be.true
+    chai.expect(logReduce.lastCall.args[0]).to.eql({
+      name: 'name',
+      state: null,
+      action: {
+        type: 'test'
+      }
+    })
+  })
+
+  it('should unsubscribe from stores after rendering asynchronously', () => {
+    const logReduce = sinon.stub()
+    const root = createAsyncRoot(createAsyncActions, () => <App />, {
+      test: createStore('name', createPluggable(logReduce))
+    })
+
+    root.renderToString().onValue()
+    clock.tick(1)
+    logReduce.reset()
+    getActionStream().push({})
+    chai.expect(logReduce.called).to.be.false
+  })
+
+  it('should unsubscribe from universal store after rendering asynchronously', () => {
+    const logReduce = sinon.stub()
+    sandbox.stub(UniversalStore, 'getProperty').returns(
+      createStore('name', createPluggable(logReduce)).getProperty())
+
+    const root = createAsyncRoot(createAsyncActions, () => <App />)
+    root.renderToString().onValue()
+    clock.tick(1)
+    logReduce.reset()
+    getActionStream().push({})
+    chai.expect(logReduce.called).to.be.false
   })
 
   afterEach(() => {
