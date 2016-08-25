@@ -8,7 +8,7 @@ describe('UniversalStates Component', () => {
 
   it('should have id', () => {
     const wrapper = shallow(<UniversalStates />)
-    chai.expect(wrapper.props('id')).to.equal('universal')
+    chai.expect(wrapper.prop('id')).to.equal('universal')
   })
 
 })
