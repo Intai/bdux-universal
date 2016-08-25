@@ -11,6 +11,12 @@ const canUseDOM = () => (
   Common.canUseDOM()
 )
 
+const parseJson = (json) => {
+  try {
+    return JSON.parse(json)
+  } catch (e) {}
+}
+
 const isNotUniversalStore = R.complement(
   R.propEq('name', StoreNames.UNIVERSAL)
 )
@@ -50,9 +56,9 @@ const accumRecords = R.converge(
 
 const onceThenNull = (func) => {
   let count = 0
-  return (...args) => (
+  return () => (
     (count++ <= 0)
-      ? func.apply(func, args)
+      ? func()
       : null
   )
 }
@@ -86,7 +92,7 @@ export const record = R.ifElse(
 export const loadStates = R.memoize(() => {
   // states recorded on server side.
   let element = document.getElementById('universal')
-  return (element && JSON.parse(element.innerHTML)) || []
+  return (element && parseJson(element.innerHTML)) || []
 })
 
 export default bindToDispatch({

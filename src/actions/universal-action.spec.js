@@ -1,10 +1,14 @@
 import chai from 'chai'
 import sinon from 'sinon'
 import Bacon from 'baconjs'
+import { jsdom } from 'jsdom'
+import ActionTypes from './action-types'
+import StoreNames from '../stores/store-names'
 import Common from '../utils/common-util'
-import {
+import UniversalAction, {
   start,
-  record } from './universal-action'
+  record,
+  loadStates } from './universal-action'
 
 describe('Universal Action', () => {
 
@@ -24,6 +28,16 @@ describe('Universal Action', () => {
     chai.expect(record({})).to.not.be.ok
   })
 
+  it('should not record universal store', () => {
+    sandbox.stub(Common, 'canUseDOM').returns(false)
+    chai.expect(record({ name: StoreNames.UNIVERSAL })).to.not.be.ok
+  })
+
+  it('should not record universal actions', () => {
+    sandbox.stub(Common, 'canUseDOM').returns(false)
+    chai.expect(record({ action: { type: ActionTypes.UNIVERSAL_RECORDS }})).to.not.be.ok
+  })
+
   it('should create a stream to start recording', () => {
     sandbox.stub(Common, 'canUseDOM').returns(false)
     chai.expect(start()).to.be.instanceof(Bacon.Observable)
@@ -34,6 +48,115 @@ describe('Universal Action', () => {
     sandbox.stub(Common, 'canUseDOM').returns(false)
     start().onValue(callback)
     chai.expect(callback.called).to.be.false
+  })
+
+  it('should record on server', () => {
+    const callback = sinon.stub()
+    sandbox.stub(Common, 'canUseDOM').returns(false)
+    start().onValue(callback)
+    chai.expect(record({ name: 'test' })).to.not.be.ok
+    chai.expect(callback.calledOnce).to.be.true
+    chai.expect(callback.lastCall.args[0]).to.eql({
+      type: ActionTypes.UNIVERSAL_RECORDS,
+      records: [{ name: 'test' }],
+      skipLog: true
+    })
+  })
+
+  it('should record nextState on server', () => {
+    const callback = sinon.stub()
+    const state = { name: 'test', nextState: 'next' }
+    sandbox.stub(Common, 'canUseDOM').returns(false)
+    start().onValue(callback)
+    record(state)
+    chai.expect(callback.calledOnce).to.be.true
+    chai.expect(callback.lastCall.args[0]).to.have.property('records')
+      .and.eql([state])
+  })
+
+  it('should record only name and nextState on server', () => {
+    const callback = sinon.stub()
+    sandbox.stub(Common, 'canUseDOM').returns(false)
+    start().onValue(callback)
+    record({ name: 'test', nextState: {}, unknown: true })
+    chai.expect(callback.calledOnce).to.be.true
+    chai.expect(callback.lastCall.args[0]).to.have.property('records')
+      .and.eql([{
+        name: 'test',
+        nextState: {}
+      }])
+  })
+
+  it('should record multiple stores on server', () => {
+    const callback = sinon.stub()
+    sandbox.stub(Common, 'canUseDOM').returns(false)
+    start().onValue(callback)
+    record({ name: 'test1', nextState: 'next' })
+    record({ name: 'test2', nextState: {} })
+    chai.expect(callback.calledTwice).to.be.true
+    chai.expect(callback.lastCall.args[0]).to.have.property('records')
+      .and.eql([{
+        name: 'test1',
+        nextState: 'next'
+      }, {
+        name: 'test2',
+        nextState: {}
+      }])
+  })
+
+  it('should overwrite records on server', () => {
+    const callback = sinon.stub()
+    sandbox.stub(Common, 'canUseDOM').returns(false)
+    start().onValue(callback)
+    record({ name: 'test', nextState: 'next' })
+    record({ name: 'test', nextState: {} })
+    chai.expect(callback.calledTwice).to.be.true
+    chai.expect(callback.lastCall.args[0]).to.have.property('records')
+      .and.eql([{
+        name: 'test',
+        nextState: {}
+      }])
+  })
+
+  it('should start recording only once on server', () => {
+    sandbox.stub(Common, 'canUseDOM').returns(false)
+    UniversalAction.start()
+    chai.expect(UniversalAction.start()).to.not.be.ok
+  })
+
+  it('should load states from server', () => {
+    const doc = jsdom(' \
+      <script id="universal" type="application/json"> \
+        [{"name":"test","nextState":""}] \
+      </script>')
+
+    global.document = doc
+    global.window = doc.defaultView
+    chai.expect(loadStates('test1')).to.be.an('array')
+      .and.eql([{
+        name: 'test',
+        nextState: ''
+      }])
+  })
+
+  it('should load empty state from server', () => {
+    const doc = jsdom(' \
+      <script id="universal" type="application/json"> \
+      </script>')
+
+    global.document = doc
+    global.window = doc.defaultView
+    chai.expect(loadStates('test2')).to.be.an('array')
+      .and.is.empty
+  })
+
+  it('should not load state from server', () => {
+    const doc = jsdom('<html></html>')
+
+    global.document = doc
+    global.window = doc.defaultView
+    chai.expect(loadStates('test3')).to.be.an('array')
+      .and.is.empty
   })
 
   afterEach(() => {
