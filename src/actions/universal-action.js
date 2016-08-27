@@ -73,6 +73,16 @@ const createStartStream = () => (
   .changes()
 )
 
+const createLoadStates = () => (
+  R.once(() => {
+    // states recorded on server side.
+    let element = document.getElementById('universal')
+    return (element && parseJson(element.innerHTML)) || []
+  })
+)
+
+let loadStatesOnce = createLoadStates()
+
 export const start = R.ifElse(
   // only start recording in browser.
   R.complement(canUseDOM),
@@ -89,11 +99,14 @@ export const record = R.ifElse(
   R.F
 )
 
-export const loadStates = R.memoize(() => {
-  // states recorded on server side.
-  let element = document.getElementById('universal')
-  return (element && parseJson(element.innerHTML)) || []
-})
+export const loadStates = () => (
+  loadStatesOnce()
+)
+
+export const reloadStates = () => {
+  loadStatesOnce = createLoadStates()
+  return loadStatesOnce()
+}
 
 export default bindToDispatch({
   // start only once.

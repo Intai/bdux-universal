@@ -3,7 +3,8 @@ import sinon from 'sinon'
 import Bacon from 'baconjs'
 import { jsdom } from 'jsdom'
 import Common from './utils/common-util'
-import UniversalAction from './actions/universal-action'
+import UniversalAction, {
+  reloadStates } from './actions/universal-action'
 import * as Universal from './universal'
 
 describe('Universal Middleware', () => {
@@ -88,6 +89,7 @@ describe('Universal Middleware', () => {
 
         global.document = doc
         global.window = doc.defaultView
+        reloadStates()
       })
 
       it('should resume states before reducer in browser', () => {
@@ -201,6 +203,7 @@ describe('Universal Middleware', () => {
 
         global.document = doc
         global.window = doc.defaultView
+        reloadStates()
       })
 
       it('should not resume states before reducer in browser', () => {

@@ -8,7 +8,8 @@ import Common from '../utils/common-util'
 import UniversalAction, {
   start,
   record,
-  loadStates } from './universal-action'
+  loadStates,
+  reloadStates } from './universal-action'
 
 describe('Universal Action', () => {
 
@@ -132,7 +133,7 @@ describe('Universal Action', () => {
 
     global.document = doc
     global.window = doc.defaultView
-    chai.expect(loadStates('test1')).to.be.an('array')
+    chai.expect(reloadStates()).to.be.an('array')
       .and.eql([{
         name: 'test',
         nextState: ''
@@ -146,7 +147,7 @@ describe('Universal Action', () => {
 
     global.document = doc
     global.window = doc.defaultView
-    chai.expect(loadStates('test2')).to.be.an('array')
+    chai.expect(reloadStates()).to.be.an('array')
       .and.is.empty
   })
 
@@ -155,7 +156,26 @@ describe('Universal Action', () => {
 
     global.document = doc
     global.window = doc.defaultView
-    chai.expect(loadStates('test3')).to.be.an('array')
+    chai.expect(reloadStates()).to.be.an('array')
+      .and.is.empty
+  })
+
+  it('should cache states from server', () => {
+    const docEmpty = jsdom('<html></html>')
+
+    global.document = docEmpty
+    global.window = docEmpty.defaultView
+    chai.expect(reloadStates()).to.be.an('array')
+      .and.is.empty
+
+    const docTest = jsdom(' \
+      <script id="universal" type="application/json"> \
+        [{"name":"test","nextState":""}] \
+      </script>')
+
+    global.document = docTest
+    global.window = docTest.defaultView
+    chai.expect(loadStates()).to.be.an('array')
       .and.is.empty
   })
 
