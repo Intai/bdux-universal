@@ -1,6 +1,7 @@
+/* eslint-env mocha */
+
 import chai from 'chai'
 import sinon from 'sinon'
-import Bacon from 'baconjs'
 import { jsdom } from 'jsdom'
 import Common from './utils/common-util'
 import UniversalAction, {
@@ -31,7 +32,7 @@ describe('Universal Middleware', () => {
       sandbox.stub(Common, 'canUseDOM').returns(false)
     })
 
-    it('should be transparent before reducer on server', () => {
+    it('should be transparent before reducer', () => {
       const pluggable = Universal.getPreReduce()
       const callback = sinon.stub()
       const value = {}
@@ -42,7 +43,7 @@ describe('Universal Middleware', () => {
       chai.expect(callback.lastCall.args[0]).to.equal(value)
     })
 
-    it('should be transparent after reducer on server', () => {
+    it('should be transparent after reducer', () => {
       const pluggable = Universal.getPostReduce()
       const callback = sinon.stub()
       const value = {}
@@ -53,13 +54,13 @@ describe('Universal Middleware', () => {
       chai.expect(callback.lastCall.args[0]).to.equal(value)
     })
 
-    it('should start recording after reducer on server', () => {
+    it('should start recording after reducer', () => {
       sandbox.spy(UniversalAction, 'start')
       Universal.getPostReduce()
       chai.expect(UniversalAction.start.calledOnce).to.be.true
     })
 
-    it('should record after reducer on server', () => {
+    it('should record after reducer', () => {
       sandbox.spy(UniversalAction, 'record')
       const pluggable = Universal.getPostReduce()
       const callback = sinon.stub()
@@ -92,7 +93,7 @@ describe('Universal Middleware', () => {
         reloadStates()
       })
 
-      it('should resume states before reducer in browser', () => {
+      it('should resume states before reducer', () => {
         const pluggable = Universal.getPreReduce('test')
         const callback = sinon.stub()
 
@@ -104,7 +105,7 @@ describe('Universal Middleware', () => {
         })
       })
 
-      it('should only resume states once before reducer in browser', () => {
+      it('should only resume states once before reducer', () => {
         const pluggable = Universal.getPreReduce('test')
         const callback = sinon.stub()
 
@@ -117,7 +118,7 @@ describe('Universal Middleware', () => {
         })
       })
 
-      it('should not resume unknown states before reducer in browser', () => {
+      it('should not resume unknown states before reducer', () => {
         const pluggable = Universal.getPreReduce('unknown')
         const callback = sinon.stub()
 
@@ -129,7 +130,7 @@ describe('Universal Middleware', () => {
         })
       })
 
-      it('should not overwrite states before reducer in browser', () => {
+      it('should not overwrite states before reducer', () => {
         const pluggable = Universal.getPreReduce('test')
         const callback = sinon.stub()
 
@@ -141,7 +142,7 @@ describe('Universal Middleware', () => {
         })
       })
 
-      it('should plug before multiple reducers in browser', () => {
+      it('should plug before multiple reducers', () => {
         const pluggable1 = Universal.getPreReduce('test')
         const pluggable2 = Universal.getPreReduce('test')
         const callback1 = sinon.stub()
@@ -172,7 +173,7 @@ describe('Universal Middleware', () => {
         })
       })
 
-      it('should start with states after reducer in browser', () => {
+      it('should start with states after reducer', () => {
         const pluggable = Universal.getPostReduce('test')
         const callback = sinon.stub()
 
@@ -183,7 +184,7 @@ describe('Universal Middleware', () => {
         })
       })
 
-      it('should not start with unknown states after reducer in browser', () => {
+      it('should not start with unknown states after reducer', () => {
         const pluggable = Universal.getPostReduce('unknown')
         const callback = sinon.stub()
 
@@ -206,7 +207,7 @@ describe('Universal Middleware', () => {
         reloadStates()
       })
 
-      it('should not resume states before reducer in browser', () => {
+      it('should not resume states before reducer', () => {
         const pluggable = Universal.getPreReduce('empty')
         const callback = sinon.stub()
 
@@ -218,7 +219,7 @@ describe('Universal Middleware', () => {
         })
       })
 
-      it('should plug before multiple reducers in browser', () => {
+      it('should plug before multiple reducers', () => {
         const pluggable1 = Universal.getPreReduce('empty')
         const pluggable2 = Universal.getPreReduce('empty')
         const callback1 = sinon.stub()
@@ -249,7 +250,7 @@ describe('Universal Middleware', () => {
         })
       })
 
-      it('should not start with states after reducer in browser', () => {
+      it('should not start with states after reducer', () => {
         const pluggable = Universal.getPostReduce('empty')
         const callback = sinon.stub()
 

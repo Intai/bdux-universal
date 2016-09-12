@@ -1,8 +1,6 @@
 import R from 'ramda'
 import Bacon from 'baconjs'
 import Common from './utils/common-util'
-import StoreNames from './stores/store-names'
-import ActionTypes from './actions/action-types'
 import UniversalAction from './actions/universal-action'
 import { loadStates } from './actions/universal-action'
 

@@ -30,6 +30,7 @@ const renderStates = R.ifElse(
   stringifyStatesInDOM
 )
 
+/* eslint-disable react/no-danger */
 export const UniversalStates = ({ states }) => (
   <script id="universal" type="application/json"
     dangerouslySetInnerHTML={{ __html: renderStates(states) }}>

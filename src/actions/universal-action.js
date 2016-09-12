@@ -14,7 +14,9 @@ const canUseDOM = () => (
 const parseJson = (json) => {
   try {
     return JSON.parse(json)
-  } catch (e) {}
+  } catch (e) {
+    // continue regardless of error.
+  }
 }
 
 const isNotUniversalStore = R.complement(

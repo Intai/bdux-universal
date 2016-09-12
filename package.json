@@ -4,7 +4,7 @@
   "description": "A Bdux Middleware",
   "main": "lib/main.js",
   "scripts": {
-    "test": "gulp test",
+    "test": "gulp cover",
     "prepublish": "gulp build"
   },
   "repository": {
@@ -39,6 +39,7 @@
     "baconjs": "^0.7.83",
     "bdux": "^0.1.23",
     "chai": "^3.5.0",
+    "coveralls": "^2.11.12",
     "del": "^2.2.0",
     "enzyme": "^2.4.1",
     "eslint": "^2.4.0",
