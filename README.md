@@ -2,6 +2,10 @@
 
 A [Bdux](https://github.com/Intai/bdux) middleware for Universal (isomorphic) JavaScript.
 
+[![Build Status](https://travis-ci.org/Intai/bdux-universal.svg?branch=master)](https://travis-ci.org/Intai/bdux-universal)
+[![Coverage Status](https://coveralls.io/repos/github/Intai/bdux-universal/badge.svg?branch=master)](https://coveralls.io/github/Intai/bdux-universal?branch=master)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e8a1e446f73441d594db7653367c17e5)](https://www.codacy.com/app/intai-hg/bdux-universal?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Intai/bdux-universal&amp;utm_campaign=Badge_Grade)
+
 ## Want to achieve
 - Render the same [React](https://facebook.github.io/react/) app on both the client and the server.
 - Seamlessly resume states from the server to the client.
