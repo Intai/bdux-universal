@@ -1,6 +1,6 @@
 import R from 'ramda'
 
-const PREFIX = 'IS'
+const PREFIX = 'BDUXIS'
 
 export const canUseDOM = () => (
   typeof window !== 'undefined'
