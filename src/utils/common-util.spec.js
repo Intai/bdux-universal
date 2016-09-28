@@ -28,7 +28,7 @@ describe('Common Utilities', () => {
   it('should generate an object of constants', () => {
     const storeNames = Common.createObjOfConsts(['UNIVERSAL'])
     chai.expect(storeNames).to.eql({
-      UNIVERSAL: 'IS_UNIVERSAL'
+      UNIVERSAL: 'BDUXIS_UNIVERSAL'
     })
   })
 
