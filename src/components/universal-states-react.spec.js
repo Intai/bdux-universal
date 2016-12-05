@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+
 import chai from 'chai'
 import sinon from 'sinon'
 import React from 'react'

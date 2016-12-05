@@ -1,4 +1,5 @@
-import R from 'ramda'
+/* eslint-env mocha */
+
 import chai from 'chai'
 import sinon from 'sinon'
 import React from 'react'
@@ -9,9 +10,7 @@ import {
   createAsyncRoot } from './server-root'
 import {
   getActionStream,
-  createStore,
-  createComponent } from 'bdux'
-
+  createStore } from 'bdux'
 
 const createPluggable = (log) => () => {
   const stream = new Bacon.Bus()
