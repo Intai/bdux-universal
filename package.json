@@ -1,6 +1,6 @@
 {
   "name": "bdux-universal",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "A Bdux Middleware",
   "main": "lib/main.js",
   "scripts": {
