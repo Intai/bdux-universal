@@ -30,7 +30,7 @@
   "homepage": "https://github.com/Intai/bdux-universal",
   "dependencies": {
     "classnames": "^2.2.5",
-    "ramda": "^0.21.0"
+    "ramda": "^0.23.0"
   },
   "devDependencies": {
     "babel-core": "^6.7.2",
@@ -42,16 +42,16 @@
     "coveralls": "^2.11.12",
     "del": "^2.2.0",
     "enzyme": "^2.4.1",
-    "eslint": "^2.4.0",
-    "eslint-plugin-react": "^4.2.3",
+    "eslint": "^3.13.0",
+    "eslint-plugin-react": "^6.8.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
-    "gulp-eslint": "^2.0.0",
+    "gulp-eslint": "^3.0.1",
     "gulp-load-plugins": "^1.2.0",
-    "gulp-mocha": "^2.2.0",
+    "gulp-mocha": "^3.0.1",
     "istanbul": "^1.1.0-alpha.1",
     "jsdom": "^9.4.2",
-    "mocha": "^2.4.5",
+    "mocha": "^3.2.0",
     "react": "^15.1.0",
     "react-addons-test-utils": "^15.1.0",
     "react-dom": "^15.1.0",

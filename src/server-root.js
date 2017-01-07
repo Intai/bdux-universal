@@ -43,17 +43,16 @@ const wrapStores = (stores, render, ...args) => {
   return html
 }
 
-const renderElement = (createElement, stores) => (
-  R.wrap(
+const renderElement = (createElement, stores) => R.partial(
+  wrapStores, [
+    stores,
     R.pipe(
       // create component element.
       createElement,
       // render the element.
       renderToString
-    ),
-    // activate stores before rendering.
-    R.partial(wrapStores, [stores])
-  )
+    )
+  ]
 )
 
 const pushActions = (args, actions) => {
@@ -61,8 +60,9 @@ const pushActions = (args, actions) => {
   return args
 }
 
-const renderAsyncElement = (createElement, stores) => (
-  R.curryN(2, R.wrap(
+const renderAsyncElement = (createElement, stores) => R.curryN(2, R.partial(
+  wrapStores, [
+    stores,
     R.pipe(
       // dispatch asynchronous actions.
       pushActions,
@@ -70,11 +70,9 @@ const renderAsyncElement = (createElement, stores) => (
       R.apply(createElement),
       // render the element.
       renderToString
-    ),
-    // activate stores before rendering.
-    R.partial(wrapStores, [stores])
-  ))
-)
+    )
+  ]
+))
 
 const mapAsyncToString = (asyncStream, renderElement) => (
   asyncStream
