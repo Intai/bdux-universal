@@ -2,7 +2,7 @@
 
 import chai from 'chai'
 import sinon from 'sinon'
-import { jsdom } from 'jsdom'
+import { JSDOM } from 'jsdom'
 import Common from './utils/common-util'
 import UniversalAction, {
   reloadStates } from './actions/universal-action'
@@ -83,13 +83,13 @@ describe('Universal Middleware', () => {
     describe('with universal states', () => {
 
       beforeEach(() => {
-        const doc = jsdom(' \
+        const dom = new JSDOM(' \
           <script id="universal" type="application/json"> \
             [{"name":"test","nextState":"Message from Server"}] \
           </script>')
 
-        global.document = doc
-        global.window = doc.defaultView
+        global.window = dom.window
+        global.document = dom.window.document
         reloadStates()
       })
 
@@ -200,10 +200,10 @@ describe('Universal Middleware', () => {
     describe('without universal states', () => {
 
       beforeEach(() => {
-        const doc = jsdom('<html></html>')
+        const dom = new JSDOM('<html></html>')
 
-        global.document = doc
-        global.window = doc.defaultView
+        global.window = dom.window
+        global.document = dom.window.document
         reloadStates()
       })
 

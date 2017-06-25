@@ -3,7 +3,7 @@
 import chai from 'chai'
 import sinon from 'sinon'
 import Bacon from 'baconjs'
-import { jsdom } from 'jsdom'
+import { JSDOM } from 'jsdom'
 import ActionTypes from './action-types'
 import StoreNames from '../stores/store-names'
 import Common from '../utils/common-util'
@@ -128,13 +128,13 @@ describe('Universal Action', () => {
   })
 
   it('should load states from server', () => {
-    const doc = jsdom(' \
+    const dom = new JSDOM(' \
       <script id="universal" type="application/json"> \
         [{"name":"test","nextState":""}] \
       </script>')
 
-    global.document = doc
-    global.window = doc.defaultView
+    global.window = dom.window
+    global.document = dom.window.document
     chai.expect(reloadStates()).to.be.an('array')
       .and.eql([{
         name: 'test',
@@ -143,40 +143,40 @@ describe('Universal Action', () => {
   })
 
   it('should load empty state from server', () => {
-    const doc = jsdom(' \
+    const dom = new JSDOM(' \
       <script id="universal" type="application/json"> \
       </script>')
 
-    global.document = doc
-    global.window = doc.defaultView
+    global.window = dom.window
+    global.document = dom.window.document
     chai.expect(reloadStates()).to.be.an('array')
       .and.is.empty
   })
 
   it('should not load state from server', () => {
-    const doc = jsdom('<html></html>')
+    const dom = new JSDOM('<html></html>')
 
-    global.document = doc
-    global.window = doc.defaultView
+    global.window = dom.window
+    global.document = dom.window.document
     chai.expect(reloadStates()).to.be.an('array')
       .and.is.empty
   })
 
   it('should cache states from server', () => {
-    const docEmpty = jsdom('<html></html>')
+    const domEmpty = new JSDOM('<html></html>')
 
-    global.document = docEmpty
-    global.window = docEmpty.defaultView
+    global.window = domEmpty.window
+    global.document = domEmpty.window.document
     chai.expect(reloadStates()).to.be.an('array')
       .and.is.empty
 
-    const docTest = jsdom(' \
+    const domTest = new JSDOM(' \
       <script id="universal" type="application/json"> \
         [{"name":"test","nextState":""}] \
       </script>')
 
-    global.document = docTest
-    global.window = docTest.defaultView
+    global.window = domTest.window
+    global.document = domTest.window.document
     chai.expect(loadStates()).to.be.an('array')
       .and.is.empty
   })
