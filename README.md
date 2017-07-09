@@ -12,12 +12,12 @@ A [Bdux](https://github.com/Intai/bdux) middleware for Universal (isomorphic) Ja
 
 ## Installation
 To install as an [npm](https://www.npmjs.com/) package:
-```
+```sh
 npm install --save bdux-universal
 ```
 
 ## Usage
-``` javascript
+```javascript
 import * as Universal from 'bdux-universal';
 import { applyMiddleware } from 'bdux';
 
@@ -26,7 +26,7 @@ applyMiddleware(
 );
 ```
 Then place `<UniversalStates />` in root component to render serialised states.
-``` javascript
+```javascript
 import React from 'react';
 import { UniversalStates } from 'bdux-universal';
 
@@ -45,12 +45,12 @@ Server Root can be created using `createRoot(createElement, stores = {})`.
 - `stores` is an object of dependent stores.
 
 Then use `renderToString` function to render the application into an HTML string through [ReactDOMServer](https://facebook.github.io/react/docs/top-level-api.html#reactdomserver.rendertostring).
-``` javascript
+```javascript
 DefaultRoot.renderToString(req, res)
 ```
 
 Example of a server root:
-``` javascript
+```javascript
 import React from 'react';
 import App from '../components/app-react';
 import MessageAction from '../actions/message-action';
@@ -80,14 +80,14 @@ Server Root can be created using `createAsyncRoot(createAsyncActions, createElem
 - `stores` is an object of dependent stores.
 
 Then use `renderToString` function to render the application into an HTML string through [ReactDOMServer](https://facebook.github.io/react/docs/top-level-api.html#reactdomserver.rendertostring) asynchronously.
-``` javascript
+```javascript
 let dispose = root.renderToString(req, res)
   .map(renderHtml(res))
   .onValue(() => dispose());
 ```
 
 Example of an asynchronous server root:
-``` javascript
+```javascript
 import R from 'ramda';
 import React from 'react';
 import Bacon from 'baconjs';
