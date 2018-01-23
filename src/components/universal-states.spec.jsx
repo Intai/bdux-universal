@@ -7,7 +7,7 @@ import { JSDOM } from 'jsdom'
 import { shallow } from 'enzyme'
 import Common from '../utils/common-util'
 import { reloadStates } from '../actions/universal-action'
-import { UniversalStates } from './universal-states-react'
+import { UniversalStates } from './universal-states'
 
 describe('UniversalStates Component', () => {
 

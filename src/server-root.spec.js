@@ -44,7 +44,7 @@ describe('Server Root', () => {
 
   it('should render to html string', () => {
     const root = createRoot(() => <App />)
-    chai.expect(root.renderToString()).to.match(/^<!--.*-->$/)
+    chai.expect(root.renderToString()).to.equal('')
   })
 
   it('should subscribe to stores', () => {
@@ -119,7 +119,7 @@ describe('Server Root', () => {
     root.renderToString().onValue(callback)
     clock.tick(1)
     chai.expect(callback.calledOnce).to.be.true
-    chai.expect(callback.lastCall.args[0]).to.match(/^<!--.*-->$/)
+    chai.expect(callback.lastCall.args[0]).to.equal('')
   })
 
   it('should dispatch an asynchronous action', () => {
