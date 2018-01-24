@@ -44,7 +44,7 @@ Server Root can be created using `createRoot(createElement, stores = {})`.
 - `createElement` is a function to create the application root element.
 - `stores` is an object of dependent stores.
 
-Then use `renderToString` function to render the application into an HTML string through [ReactDOMServer](https://facebook.github.io/react/docs/top-level-api.html#reactdomserver.rendertostring).
+Then use `renderToString` or `renderToNodeStream` function to render the application into HTML through [ReactDOMServer](https://reactjs.org/docs/react-dom-server.html).
 ```javascript
 DefaultRoot.renderToString(req, res)
 ```
@@ -61,7 +61,7 @@ import { createRoot } from 'bdux-universal';
 export const createElement = (req) => {
   resetLocationHistory(req.path);
   MessageAction.message('Message from Server');
-  return (<App />);
+  return <App />;
 };
 
 export default createRoot(
@@ -79,9 +79,9 @@ Server Root can be created using `createAsyncRoot(createAsyncActions, createElem
 - `createElement` is a function to create the application root element.
 - `stores` is an object of dependent stores.
 
-Then use `renderToString` function to render the application into an HTML string through [ReactDOMServer](https://facebook.github.io/react/docs/top-level-api.html#reactdomserver.rendertostring) asynchronously.
+Then use `renderToString` or `renderToNodeStream` function to render the application into HTML through [ReactDOMServer](https://reactjs.org/docs/react-dom-server.html) asynchronously.
 ```javascript
-let dispose = root.renderToString(req, res)
+let dispose = DefaultRoot.renderToString(req, res)
   .map(renderHtml(res))
   .onValue(() => dispose());
 ```

@@ -4,6 +4,7 @@ import chai from 'chai'
 import sinon from 'sinon'
 import React from 'react'
 import Bacon from 'baconjs'
+import { StringDecoder } from 'string_decoder'
 import UniversalStore from './stores/universal-store'
 import {
   createRoot,
@@ -42,9 +43,29 @@ describe('Server Root', () => {
       .and.is.a('function')
   })
 
+  it('should create a root to render to node stream', () => {
+    const root = createRoot(() => <App />)
+    chai.expect(root).to.have.property('renderToNodeStream')
+      .and.is.a('function')
+  })
+
   it('should render to html string', () => {
     const root = createRoot(() => <App />)
     chai.expect(root.renderToString()).to.equal('')
+  })
+
+  it('should render to html stream', (done) => {
+    const root = createRoot(() => <App />)
+    const decoder = new StringDecoder('utf8')
+    const readable = root.renderToNodeStream()
+    let html = ''
+
+    readable.on('data', chunk => html += decoder.write(chunk))
+    readable.on('end', () => {
+      html += decoder.end()
+      chai.expect(html).to.equal('')
+      done()
+    })
   })
 
   it('should subscribe to stores', () => {
@@ -113,6 +134,12 @@ describe('Server Root', () => {
       .and.is.a('function')
   })
 
+  it('should create a async root to render to node stream', () => {
+    const root = createAsyncRoot(createAsyncActions, () => <App />)
+    chai.expect(root).to.have.property('renderToNodeStream')
+      .and.is.a('function')
+  })
+
   it('should render asynchronously to html string', () => {
     const callback = sinon.stub()
     const root = createAsyncRoot(createAsyncActions, () => <App />)
@@ -120,6 +147,26 @@ describe('Server Root', () => {
     clock.tick(1)
     chai.expect(callback.calledOnce).to.be.true
     chai.expect(callback.lastCall.args[0]).to.equal('')
+  })
+
+  it('should render asynchronously to html stream', (done) => {
+    const callback = sinon.stub()
+    const root = createAsyncRoot(createAsyncActions, () => <div />)
+    root.renderToNodeStream().onValue(callback)
+
+    clock.tick(1)
+    chai.expect(callback.calledOnce).to.be.true
+
+    const decoder = new StringDecoder('utf8')
+    const readable = callback.lastCall.args[0]
+    let html = ''
+
+    readable.on('data', chunk => html += decoder.write(chunk))
+    readable.on('end', () => {
+      html += decoder.end()
+      chai.expect(html).to.match(/<div[^>]*><\/div>/)
+      done()
+    })
   })
 
   it('should dispatch an asynchronous action', () => {
