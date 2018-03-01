@@ -3,8 +3,8 @@
 var gulp = require('gulp'),
     $ = require('gulp-load-plugins')(),
     spawn = require('child_process').spawn,
-    srcFiles = './src/**/!(*.spec).js',
-    testFiles = './src/**/*.spec.js';
+    srcFiles = './src/**/!(*.spec).{js,jsx}',
+    testFiles = './src/**/*.spec.{js,jsx}';
 
 gulp.task('clean', function () {
   require('del').sync('lib');
