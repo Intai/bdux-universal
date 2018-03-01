@@ -1,4 +1,4 @@
-import R from 'ramda'
+import * as R from 'ramda'
 import React from 'react'
 import Common from '../utils/common-util'
 import UniversalStore from '../stores/universal-store'

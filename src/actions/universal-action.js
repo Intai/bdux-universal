@@ -1,4 +1,4 @@
-import R from 'ramda'
+import * as R from 'ramda'
 import Bacon from 'baconjs'
 import ActionTypes from './action-types'
 import StoreNames from '../stores/store-names'
