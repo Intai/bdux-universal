@@ -24,7 +24,6 @@ const createPluggable = (log) => () => {
 
 const createAsyncActions = () => (
   Bacon.once([{ type: 'test' }])
-    .delay(1)
 )
 
 describe('Server Root', () => {
@@ -140,6 +139,23 @@ describe('Server Root', () => {
       .and.is.a('function')
   })
 
+  it('should pass arguments to create async actions', () => {
+    const callback = sinon.stub().returns(Bacon.once([]))
+    const root = createAsyncRoot(callback, () => <App />)
+    root.renderToString('req', 'res')
+    chai.expect(callback.calledOnce).to.be.true
+    chai.expect(callback.lastCall.args).to.eql(['req', 'res'])
+  })
+
+  it('should pass arguments to create async element', () => {
+    const callback = sinon.stub().returns(<App />)
+    const root = createAsyncRoot(createAsyncActions, callback)
+    root.renderToString('req', 'res').onValue()
+    clock.tick(1)
+    chai.expect(callback.calledOnce).to.be.true
+    chai.expect(callback.lastCall.args).to.eql(['req', 'res'])
+  })
+
   it('should render asynchronously to html string', () => {
     const callback = sinon.stub()
     const root = createAsyncRoot(createAsyncActions, () => <App />)
@@ -169,6 +185,17 @@ describe('Server Root', () => {
     })
   })
 
+  it('should render asynchronously without async action', () => {
+    const callback = sinon.stub()
+    const actionBus = new Bacon.Bus()
+    const createActions = () => actionBus
+    const root = createAsyncRoot(createActions, () => <App />)
+    root.renderToString().onValue(callback)
+    actionBus.push([])
+    chai.expect(callback.calledOnce).to.be.true
+    chai.expect(callback.lastCall.args[0]).to.equal('')
+  })
+
   it('should dispatch an asynchronous action', () => {
     const callback = sinon.stub()
     const root = createAsyncRoot(createAsyncActions, () => <App />)
@@ -187,6 +214,7 @@ describe('Server Root', () => {
     const root = createAsyncRoot(createActions, () => <App />)
     getActionStream().onValue(callback)
     root.renderToString().onValue()
+    clock.tick(1)
     chai.expect(callback.calledTwice).to.be.true
     chai.expect(callback.lastCall.args[0]).to.eql({
       type: 'second'
@@ -199,6 +227,7 @@ describe('Server Root', () => {
     const root = createAsyncRoot(createActions, () => <App />)
     getActionStream().onValue(callback)
     root.renderToString().onValue()
+    clock.tick(1)
     chai.expect(callback.calledOnce).to.be.true
     chai.expect(callback.lastCall.args[0]).to.eql({
       type: 'first'
