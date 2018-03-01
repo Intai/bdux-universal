@@ -1,4 +1,5 @@
-export { default as UniversalStates } from './components/universal-states';
-export { default as UniversalStore } from './stores/universal-store';
-export * from './server-root';
-export * from './universal';
+export { hasUniversalStates } from './actions/universal-action'
+export { default as UniversalStates } from './components/universal-states'
+export { default as UniversalStore } from './stores/universal-store'
+export * from './server-root'
+export * from './universal'

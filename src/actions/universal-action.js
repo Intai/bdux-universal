@@ -78,7 +78,7 @@ const createStartStream = () => (
 const createLoadStates = () => (
   R.once(() => {
     // states recorded on server side.
-    let element = document.getElementById('universal')
+    const element = document.getElementById('universal')
     return (element && parseJson(element.innerHTML)) || []
   })
 )
@@ -99,6 +99,10 @@ export const record = R.ifElse(
   // record the store state.
   pushRecord,
   R.F
+)
+
+export const hasUniversalStates = () => (
+  Common.canUseDOM() && !!document.getElementById('universal')
 )
 
 export const loadStates = () => (

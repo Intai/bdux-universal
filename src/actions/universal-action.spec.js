@@ -11,7 +11,8 @@ import UniversalAction, {
   start,
   record,
   loadStates,
-  reloadStates } from './universal-action'
+  reloadStates,
+  hasUniversalStates } from './universal-action'
 
 describe('Universal Action', () => {
 
@@ -19,6 +20,21 @@ describe('Universal Action', () => {
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create()
+  })
+
+  it('should have no universal states', () => {
+    chai.expect(hasUniversalStates()).to.be.false
+  })
+
+  it('should have universal states', () => {
+    const dom = new JSDOM(' \
+      <script id="universal" type="application/json"> \
+      </script>')
+
+    global.window = dom.window
+    global.document = dom.window.document
+    sandbox.stub(Common, 'canUseDOM').returns(true)
+    chai.expect(hasUniversalStates()).to.be.true
   })
 
   it('should not start recording in browser', () => {
