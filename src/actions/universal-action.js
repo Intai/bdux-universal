@@ -24,7 +24,14 @@ const isNotUniversalStore = R.complement(
 )
 
 const isNotUniversalAction = R.complement(
-  R.pathEq(['action', 'type'], ActionTypes.UNIVERSAL_RECORDS)
+  R.pipe(
+    R.path(['action', 'type']),
+    R.flip(R.contains)([
+      ActionTypes.UNIVERSAL_RECORDS,
+      ActionTypes.UNIVERSAL_ASYNC_RECORD,
+      ActionTypes.UNIVERSAL_ASYNC_RENDER
+    ])
+  )
 )
 
 const shouldRecord = R.allPass([
@@ -86,7 +93,7 @@ const createLoadStates = () => (
 let loadStatesOnce = createLoadStates()
 
 export const start = R.ifElse(
-  // only start recording in browser.
+  // only start recording on server.
   R.complement(canUseDOM),
   // create a stream to dispatch records of store states.
   createStartStream,
@@ -114,8 +121,21 @@ export const reloadStates = () => {
   return loadStatesOnce()
 }
 
+export const startAsyncRecord = (id) => ({
+  type: ActionTypes.UNIVERSAL_ASYNC_RECORD,
+  asyncRenderId: id,
+  skipLog: true
+})
+
+export const startAsyncRender = (id) => ({
+  type: ActionTypes.UNIVERSAL_ASYNC_RENDER,
+  asyncRenderId: id,
+  skipLog: true
+})
+
 export default bindToDispatch({
   // start only once.
   start: onceThenNull(start),
-  record
+  record,
+  startAsyncRender
 })

@@ -12,7 +12,9 @@ import UniversalAction, {
   record,
   loadStates,
   reloadStates,
-  hasUniversalStates } from './universal-action'
+  hasUniversalStates,
+  startAsyncRecord,
+  startAsyncRender } from './universal-action'
 
 describe('Universal Action', () => {
 
@@ -52,9 +54,19 @@ describe('Universal Action', () => {
     chai.expect(record({ name: StoreNames.UNIVERSAL })).to.not.be.ok
   })
 
-  it('should not record universal actions', () => {
+  it('should not record universal records action', () => {
     sandbox.stub(Common, 'canUseDOM').returns(false)
     chai.expect(record({ action: { type: ActionTypes.UNIVERSAL_RECORDS }})).to.not.be.ok
+  })
+
+  it('should not record universal async record action', () => {
+    sandbox.stub(Common, 'canUseDOM').returns(false)
+    chai.expect(record({ action: { type: ActionTypes.UNIVERSAL_ASYNC_RECORD }})).to.not.be.ok
+  })
+
+  it('should not record universal async render action', () => {
+    sandbox.stub(Common, 'canUseDOM').returns(false)
+    chai.expect(record({ action: { type: ActionTypes.UNIVERSAL_ASYNC_RENDER }})).to.not.be.ok
   })
 
   it('should create a stream to start recording', () => {
@@ -195,6 +207,22 @@ describe('Universal Action', () => {
     global.document = domTest.window.document
     chai.expect(loadStates()).to.be.an('array')
       .and.is.empty
+  })
+
+  it('should create async record action', () => {
+    chai.expect(startAsyncRecord(1)).to.eql({
+      type: ActionTypes.UNIVERSAL_ASYNC_RECORD,
+      asyncRenderId: 1,
+      skipLog: true
+    })
+  })
+
+  it('should create async render action', () => {
+    chai.expect(startAsyncRender(2)).to.eql({
+      type: ActionTypes.UNIVERSAL_ASYNC_RENDER,
+      asyncRenderId: 2,
+      skipLog: true
+    })
   })
 
   afterEach(() => {

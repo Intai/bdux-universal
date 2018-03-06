@@ -1,8 +1,9 @@
 import * as R from 'ramda'
 import Bacon from 'baconjs'
 import UniversalStore from './stores/universal-store'
+import { startAsyncRecord } from './actions/universal-action'
 import { renderToString, renderToNodeStream } from 'react-dom/server'
-import { getActionStream } from 'bdux'
+import { generateActionId, getActionStream } from 'bdux'
 
 const subscribe = (store) => (
   // subscribe to a store.
@@ -55,34 +56,42 @@ const renderElement = (render, createElement, stores) => wrapStores(
   stores
 )
 
-const mergeArgs = (args) => (actions) => ({
-  args,
-  actions
-})
-
 const combineStoreChanges = (stores) => (
-  Bacon.combineTemplate(
+  Bacon.combineAsArray(
     R.map(
       store => store.getProperty().changes(),
-      R.merge(stores || {}, {
-        universal: UniversalStore
-      })
+      R.append(
+        UniversalStore,
+        R.values(stores || {})
+      )
     )
   )
 )
 
-const pushActions = (data) => {
-  if (data.actions && data.actions.length > 0) {
-    const bus = getActionStream()
-    R.forEach(action => bus.push(action), data.actions)
-  } else {
-    getActionStream().push({})
-  }
+const isAsyncRender = (id) => R.pipe(
+  R.last,
+  R.when(
+    R.identity,
+    R.propEq('asyncRenderId', id)
+  )
+)
+
+const addActionId = R.converge(
+  R.assoc('id'), [
+    generateActionId,
+    R.identity
+  ]
+)
+
+const pushActions = (id) => (actions) => {
+  const bus = getActionStream()
+  R.forEach(action => bus.push(addActionId(action)), actions || [])
+  bus.push(startAsyncRecord(id))
 }
 
-const wrapAsyncElement = (createElement) => (data) => (
+const wrapAsyncElement = (createElement, args) => (data) => (
   R.merge(data, {
-    element: createElement(...data.args)
+    element: createElement(...args)
   })
 )
 
@@ -93,24 +102,25 @@ const wrapAsyncRender = (render) => (data) => (
 )
 
 const renderAsyncElementToHtml = (render, createAsyncActions, createElement, stores) => (...args) => {
-  const actionsValve = combineStoreChanges(stores)
-    .map(R.F)
-    .startWith(true)
-
-  // create asynchronous actions.
-  return createAsyncActions(...args)
-    .map(mergeArgs(args))
-    // dispatch the asynchronous actions.
-    .doAction(pushActions)
-    // hold unitl the actions dispatched.
-    .holdWhen(actionsValve)
+  const asyncRenderId = generateActionId()
+  const ret = combineStoreChanges(stores)
+    // hold unitl the actions dispatched and stores updated.
+    .filter(isAsyncRender(asyncRenderId))
     // create component element.
-    .map(wrapAsyncElement(createElement))
+    .map(wrapAsyncElement(createElement, args))
     // render the element.
     .map(wrapAsyncRender(render))
     // return html string or stream.
     .map(R.prop('html'))
     .first()
+
+  // create asynchronous actions.
+  createAsyncActions(...args)
+    .first()
+    // dispatch the asynchronous actions.
+    .onValue(pushActions(asyncRenderId))
+
+  return ret
 }
 
 export const createRoot = (...args) => ({

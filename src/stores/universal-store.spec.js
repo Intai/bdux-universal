@@ -42,9 +42,37 @@ describe('Universal Store', () => {
     })
 
     chai.expect(callback.calledTwice).to.be.true
-    chai.expect(callback.lastCall.args[0]).to.eql({
+    chai.expect(callback.lastCall.args[0]).to.include({
       records: records
     })
+  })
+
+  it('should update async render id', () => {
+    const callback = sinon.stub()
+    UniversalStore.getProperty().onValue(callback)
+    getActionStream().push({
+      type: ActionTypes.UNIVERSAL_ASYNC_RENDER,
+      asyncRenderId: 1
+    })
+
+    chai.expect(callback.calledTwice).to.be.true
+    chai.expect(callback.lastCall.args[0])
+      .to.have.property('asyncRenderId', 1)
+  })
+
+  it('should pass on async render id', () => {
+    const callback = sinon.stub()
+    UniversalStore.getProperty().onValue(callback)
+    getActionStream().push({
+      type: ActionTypes.UNIVERSAL_ASYNC_RECORD,
+      asyncRenderId: 2
+    })
+
+    chai.expect(callback.calledThrice).to.be.true
+    chai.expect(callback.secondCall.args[0])
+      .to.not.have.property('asyncRenderId', 2)
+    chai.expect(callback.lastCall.args[0])
+      .to.have.property('asyncRenderId', 2)
   })
 
   afterEach(() => {
