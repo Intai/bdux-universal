@@ -287,6 +287,18 @@ describe('Server Root', () => {
     })
   })
 
+  it('should update universal store to render asynchronously', () => {
+    const logReduce = sinon.stub()
+    sandbox.stub(UniversalStore, 'getProperty').returns(
+      createStore('universal', createUniversal(logReduce)).getProperty())
+
+    const root = createAsyncRoot(createAsyncActions, () => <App />)
+    root.renderToString().onValue()
+    clock.tick(1)
+    chai.expect(logReduce.calledThrice).to.be.true
+    chai.expect(logReduce.lastCall.args[0]).to.have.property('asyncRenderId')
+  })
+
   it('should unsubscribe from stores after rendering asynchronously', () => {
     const logReduce = sinon.stub()
     const root = createAsyncRoot(createAsyncActions, () => <App />, {
