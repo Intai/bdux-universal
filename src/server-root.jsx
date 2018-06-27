@@ -1,13 +1,29 @@
 import * as R from 'ramda'
+import React from 'react'
 import Bacon from 'baconjs'
 import UniversalStore from './stores/universal-store'
 import { startAsyncRecord } from './actions/universal-action'
 import { renderToString, renderToNodeStream } from 'react-dom/server'
-import { generateActionId, getActionStream } from 'bdux'
+import { BduxContext, createDispatcher } from 'bdux'
 
-const subscribe = (store) => (
+const createContext = () => {
+  const dispatcher = createDispatcher()
+  return {
+    dispatcher,
+    props: {
+      bdux: {
+        dispatcher,
+        stores: new WeakMap()
+      },
+      dispatch: dispatcher.dispatchAction,
+      bindToDispatch: dispatcher.bindToDispatch
+    }
+  }
+}
+
+const subscribe = (props) => (store) => (
   // subscribe to a store.
-  store.getProperty().onValue()
+  store.getProperty(props).onValue()
 )
 
 const hasFuncs = R.allPass([
@@ -21,45 +37,43 @@ const pipeFuncs = R.ifElse(
   R.always(R.F)
 )
 
-const activateStores = R.pipe(
+const activateStores = (props) => R.pipe(
   // get the array of stores.
   R.values,
   // subscribe to stores.
-  R.map(subscribe),
+  R.map(subscribe(props)),
   // pipe all dispose functions.
   pipeFuncs
 )
 
-const wrapStores = (render, stores) => (...args) => {
+const renderElement = (render, createElement, stores) => (...args) => {
+  const { props } = createContext()
+
   // activate stores before rendering.
-  const dispose = activateStores(R.merge(
-    stores || {}, {
-      universal: UniversalStore
-    }
-  ))
+  const dispose = activateStores(props)({
+    ...stores,
+    universal: UniversalStore
+  })
+
+  // create component element.
+  const element = (
+    <BduxContext.Provider value={props.bdux}>
+      {createElement(props, ...args)}
+    </BduxContext.Provider>
+  )
 
   // render to html.
-  const html = render(...args)
+  const html = render(element)
   // dispose store subscriptions.
   dispose()
 
   return html
 }
 
-const renderElement = (render, createElement, stores) => wrapStores(
-  R.pipe(
-    // create component element.
-    createElement,
-    // render the element.
-    render
-  ),
-  stores
-)
-
-const combineStoreChanges = (stores) => (
+const combineStoreChanges = (props, stores) => (
   Bacon.combineAsArray(
     R.map(
-      store => store.getProperty().changes(),
+      store => store.getProperty(props).changes(),
       R.append(
         UniversalStore,
         R.values(stores || {})
@@ -76,22 +90,22 @@ const isAsyncRender = (id) => R.pipe(
   )
 )
 
-const addActionId = R.converge(
-  R.assoc('id'), [
-    generateActionId,
-    R.identity
-  ]
-)
-
-const pushActions = (id) => (actions) => {
-  const bus = getActionStream()
-  R.forEach(action => bus.push(addActionId(action)), actions || [])
+const pushActions = (dispatcher, id) => (actions) => {
+  const bus = dispatcher.getActionStream()
+  R.forEach(
+    action => bus.push(R.assoc('id', dispatcher.generateActionId(), action)),
+    actions || []
+  )
   bus.push(startAsyncRecord(id))
 }
 
-const wrapAsyncElement = (createElement, args) => (data) => (
+const wrapAsyncElement = (createElement, props, args) => (data) => (
   R.merge(data, {
-    element: createElement(...args)
+    element: (
+      <BduxContext.Provider value={props.bdux}>
+        {createElement(props, ...args)}
+      </BduxContext.Provider>
+    )
   })
 )
 
@@ -102,12 +116,14 @@ const wrapAsyncRender = (render) => (data) => (
 )
 
 const renderAsyncElementToHtml = (render, createAsyncActions, createElement, stores) => (...args) => {
-  const asyncRenderId = generateActionId()
-  const ret = combineStoreChanges(stores)
+  const { dispatcher, props } = createContext()
+
+  const asyncRenderId = dispatcher.generateActionId()
+  const ret = combineStoreChanges(props, stores)
     // hold unitl the actions dispatched and stores updated.
     .filter(isAsyncRender(asyncRenderId))
     // create component element.
-    .map(wrapAsyncElement(createElement, args))
+    .map(wrapAsyncElement(createElement, props, args))
     // render the element.
     .map(wrapAsyncRender(render))
     // return html string or stream.
@@ -115,10 +131,10 @@ const renderAsyncElementToHtml = (render, createAsyncActions, createElement, sto
     .first()
 
   // create asynchronous actions.
-  createAsyncActions(...args)
+  createAsyncActions(props, ...args)
     .first()
     // dispatch the asynchronous actions.
-    .onValue(pushActions(asyncRenderId))
+    .onValue(pushActions(dispatcher, asyncRenderId))
 
   return ret
 }

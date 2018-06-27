@@ -1,11 +1,7 @@
 import * as R from 'ramda'
-import Bacon from 'baconjs'
 import ActionTypes from './action-types'
 import StoreNames from '../stores/store-names'
 import Common from '../utils/common-util'
-import { bindToDispatch } from 'bdux'
-
-const recordStream = new Bacon.Bus()
 
 const canUseDOM = () => (
   Common.canUseDOM()
@@ -27,7 +23,7 @@ const isNotUniversalAction = R.complement(
   R.pipe(
     R.path(['action', 'type']),
     R.flip(R.contains)([
-      ActionTypes.UNIVERSAL_RECORDS,
+      ActionTypes.UNIVERSAL_RECORD,
       ActionTypes.UNIVERSAL_ASYNC_RECORD,
       ActionTypes.UNIVERSAL_ASYNC_RENDER
     ])
@@ -40,46 +36,22 @@ const shouldRecord = R.allPass([
   isNotUniversalStore
 ])
 
-const pushRecord = (record) => {
-  recordStream.push(record)
-}
-
-const cleanRecord = R.pipe(
-  R.nthArg(1),
-  R.pick(['name', 'nextState'])
+const cleanRecord = R.pick(
+  ['name', 'nextState']
 )
 
-const removePrevRecord = (records, record) => (
-  R.reject(R.propEq('name', record.name), records)
-)
+const createRecord = (record) => ({
+  type: ActionTypes.UNIVERSAL_RECORD,
+  record: cleanRecord(record),
+  skipLog: true
+})
 
-const accumRecords = R.converge(
-  // append to the array of records.
-  R.append, [
-    // get the new record.
-    cleanRecord,
-    // remove the existing record.
-    removePrevRecord
-  ]
-)
-
-const onceThenNull = (func) => {
-  let count = 0
-  return () => (
-    (count++ <= 0)
-      ? func()
-      : null
-  )
-}
-
-const createStartStream = () => (
-  // create an action when records change.
-  Bacon.combineTemplate({
-    type: ActionTypes.UNIVERSAL_RECORDS,
-    records: recordStream.scan([], accumRecords),
-    skipLog: true
-  })
-  .changes()
+export const record = R.ifElse(
+  // dont record universal related store state.
+  shouldRecord,
+  // record the store state.
+  createRecord,
+  R.F
 )
 
 const createLoadStates = () => (
@@ -91,22 +63,6 @@ const createLoadStates = () => (
 )
 
 let loadStatesOnce = createLoadStates()
-
-export const start = R.ifElse(
-  // only start recording on server.
-  R.complement(canUseDOM),
-  // create a stream to dispatch records of store states.
-  createStartStream,
-  R.F
-)
-
-export const record = R.ifElse(
-  // dont record universal related store state.
-  shouldRecord,
-  // record the store state.
-  pushRecord,
-  R.F
-)
 
 export const hasUniversalStates = () => (
   Common.canUseDOM() && !!document.getElementById('universal')
@@ -131,11 +87,4 @@ export const startAsyncRender = (id) => ({
   type: ActionTypes.UNIVERSAL_ASYNC_RENDER,
   asyncRenderId: id,
   skipLog: true
-})
-
-export default bindToDispatch({
-  // start only once.
-  start: onceThenNull(start),
-  record,
-  startAsyncRender
 })

@@ -2,15 +2,15 @@ import * as R from 'ramda'
 import Bacon from 'baconjs'
 import ActionTypes from '../actions/action-types'
 import StoreNames from '../stores/store-names'
-import UniversalAction from '../actions/universal-action'
+import { startAsyncRender } from '../actions/universal-action'
 import { createStore } from 'bdux'
 
 const isAction = R.pathEq(
   ['action', 'type']
 )
 
-const isRecords = isAction(
-  ActionTypes.UNIVERSAL_RECORDS
+const isRecord = isAction(
+  ActionTypes.UNIVERSAL_RECORD
 )
 
 const isStartAsyncRender = isAction(
@@ -32,10 +32,30 @@ const mergeState = (name, func) => (
   ])
 )
 
-const getRecords = R.when(
-  isRecords,
+const removePrevRecord = (record, records) => (
+  R.reject(
+    R.propEq('name', record.name),
+    records || []
+  )
+)
+
+const appendRecord = ({ state, action }) => (
+  // append to the array of records.
+  R.append(
+    // get the new record.
+    action.record,
+    // remove the existing record.
+    removePrevRecord(
+      action.record,
+      state && state.records
+    )
+  )
+)
+
+const accumRecords = R.when(
+  isRecord,
   mergeState('records',
-    R.path(['action', 'records']))
+    appendRecord)
 )
 
 const setAsyncRenderId = R.when(
@@ -44,20 +64,21 @@ const setAsyncRenderId = R.when(
     R.path(['action', 'asyncRenderId']))
 )
 
-const createAsyncRender = R.when(
-  isStartAsyncRecord,
-  R.pipe(
-    R.path(['action', 'asyncRenderId']),
-    UniversalAction.startAsyncRender
-  )
+const dispatch = (createAction) => R.converge(
+  R.call, [
+    R.prop('dispatch'),
+    createAction
+  ]
 )
 
-const getOutputStream = (reducerStream) => (
-  reducerStream
-    .map(getRecords)
-    .map(setAsyncRenderId)
-    .doAction(createAsyncRender)
-    .map(R.prop('state'))
+const createAsyncRender = R.when(
+  isStartAsyncRecord,
+  dispatch(
+    R.pipe(
+      R.path(['action', 'asyncRenderId']),
+      startAsyncRender
+    )
+  )
 )
 
 export const getReducer = () => {
@@ -65,7 +86,11 @@ export const getReducer = () => {
 
   return {
     input: reducerStream,
-    output: getOutputStream(reducerStream)
+    output: reducerStream
+      .map(accumRecords)
+      .map(setAsyncRenderId)
+      .doAction(createAsyncRender)
+      .map(R.prop('state'))
   }
 }
 

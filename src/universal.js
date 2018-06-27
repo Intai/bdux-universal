@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import Bacon from 'baconjs'
 import Common from './utils/common-util'
-import UniversalAction from './actions/universal-action'
+import { record } from './actions/universal-action'
 import { loadStates } from './actions/universal-action'
 
 const findRecordByName = (name, records) => (
@@ -19,17 +19,14 @@ const findRecordToStartWith = R.converge(
   ]
 )
 
-export const getPostReduce = () => {
+export const getPostReduce = ({ bindToDispatch }) => {
   const postStream = new Bacon.Bus()
-
-  // start recording on server.
-  UniversalAction.start()
 
   return {
     input: postStream,
     output: postStream
       // record store states.
-      .doAction(UniversalAction.record)
+      .doAction(bindToDispatch(record))
   }
 }
 
