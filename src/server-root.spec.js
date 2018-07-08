@@ -33,12 +33,17 @@ const createAsyncActions = () => (
   Bacon.once([{ type: 'test' }])
 )
 
+const removeReserved = R.pipe(
+  R.dissocPath(['action', 'id']),
+  R.omit(['bdux', 'dispatch', 'bindToDispatch'])
+)
+
 describe('Server Root', () => {
 
   let sandbox, clock, App
 
   beforeEach(() => {
-    sandbox = sinon.sandbox.create()
+    sandbox = sinon.createSandbox()
     clock = sinon.useFakeTimers(Date.now())
     App = sinon.stub().returns(false)
   })
@@ -74,9 +79,19 @@ describe('Server Root', () => {
     })
   })
 
+  it('should pass arguments to create element', () => {
+    const callback = sinon.stub().returns(<App />)
+    const root = createRoot(callback)
+    root.renderToString('req', 'res')
+    chai.expect(callback.calledOnce).to.be.true
+    chai.expect(callback.lastCall.args.slice(1)).to.eql(['req', 'res'])
+    chai.expect(callback.lastCall.args[0]).to.have.keys(
+      'bdux', 'dispatch', 'bindToDispatch')
+  })
+
   it('should subscribe to stores', () => {
-    const createElement = () => {
-      getActionStream().push({})
+    const createElement = ({ dispatch }) => {
+      dispatch({})
       return <App />
     }
 
@@ -87,7 +102,7 @@ describe('Server Root', () => {
 
     root.renderToString()
     chai.expect(logReduce.calledOnce).to.be.true
-    chai.expect(logReduce.lastCall.args[0]).to.eql({
+    chai.expect(removeReserved(logReduce.lastCall.args[0])).to.eql({
       name: 'name',
       action: {},
       state: null
@@ -95,18 +110,18 @@ describe('Server Root', () => {
   })
 
   it('should subscribe to universal store', () => {
-    const createElement = () => {
-      getActionStream().push({})
+    const createElement = ({ dispatch }) => {
+      dispatch({})
       return <App />
     }
 
     const logReduce = sinon.stub()
-    sandbox.stub(UniversalStore, 'getProperty').returns(
-      createStore('name', createPluggable(logReduce)).getProperty())
+    sandbox.stub(UniversalStore, 'getProperty').callsFake(
+      createStore('name', createPluggable(logReduce)).getProperty)
 
     createRoot(createElement).renderToString()
     chai.expect(logReduce.calledOnce).to.be.true
-    chai.expect(logReduce.lastCall.args[0]).to.eql({
+    chai.expect(removeReserved(logReduce.lastCall.args[0])).to.eql({
       name: 'name',
       action: {},
       state: null
@@ -151,7 +166,9 @@ describe('Server Root', () => {
     const root = createAsyncRoot(callback, () => <App />)
     root.renderToString('req', 'res')
     chai.expect(callback.calledOnce).to.be.true
-    chai.expect(callback.lastCall.args).to.eql(['req', 'res'])
+    chai.expect(callback.lastCall.args.slice(1)).to.eql(['req', 'res'])
+    chai.expect(callback.lastCall.args[0]).to.have.keys(
+      'bdux', 'dispatch', 'bindToDispatch')
   })
 
   it('should pass arguments to create async element', () => {
@@ -160,7 +177,9 @@ describe('Server Root', () => {
     root.renderToString('req', 'res').onValue()
     clock.tick(1)
     chai.expect(callback.calledOnce).to.be.true
-    chai.expect(callback.lastCall.args).to.eql(['req', 'res'])
+    chai.expect(callback.lastCall.args.slice(1)).to.eql(['req', 'res'])
+    chai.expect(callback.lastCall.args[0]).to.have.keys(
+      'bdux', 'dispatch', 'bindToDispatch')
   })
 
   it('should render asynchronously to html string', () => {
@@ -216,8 +235,12 @@ describe('Server Root', () => {
 
   it('should dispatch an asynchronous action', () => {
     const callback = sinon.stub()
-    const root = createAsyncRoot(createAsyncActions, () => <App />)
-    getActionStream().onValue(callback)
+    const createActions = ({ bdux }) => {
+      bdux.dispatcher.getActionStream().onValue(callback)
+      return Bacon.once([{ type: 'test' }])
+    }
+
+    const root = createAsyncRoot(createActions, () => <App />)
     root.renderToString().onValue()
     clock.tick(1)
     chai.expect(callback.calledThrice).to.be.true
@@ -231,9 +254,12 @@ describe('Server Root', () => {
 
   it('should dispatch multiple asynchronous actions', () => {
     const callback = sinon.stub()
-    const createActions = () => Bacon.once([{ type: 'first' }, { type: 'second' }])
+    const createActions = ({ bdux }) => {
+      bdux.dispatcher.getActionStream().onValue(callback)
+      return Bacon.once([{ type: 'first' }, { type: 'second' }])
+    }
+
     const root = createAsyncRoot(createActions, () => <App />)
-    getActionStream().onValue(callback)
     root.renderToString().onValue()
     clock.tick(1)
     chai.expect(callback.callCount).to.equal(4)
@@ -244,9 +270,12 @@ describe('Server Root', () => {
 
   it('should receive only the first set of asynchronous actions', () => {
     const callback = sinon.stub()
-    const createActions = () => Bacon.fromArray([[{ type: 'first' }], [{ type: 'second' }]])
+    const createActions = ({ bdux }) => {
+      bdux.dispatcher.getActionStream().onValue(callback)
+      return Bacon.fromArray([[{ type: 'first' }], [{ type: 'second' }]])
+    }
+
     const root = createAsyncRoot(createActions, () => <App />)
-    getActionStream().onValue(callback)
     root.renderToString().onValue()
     clock.tick(1)
     chai.expect(callback.callCount).to.equal(3)
@@ -273,8 +302,8 @@ describe('Server Root', () => {
 
   it('should subscribe to universal store to render asynchronously', () => {
     const logReduce = sinon.stub()
-    sandbox.stub(UniversalStore, 'getProperty').returns(
-      createStore('name', createPluggable(logReduce)).getProperty())
+    sandbox.stub(UniversalStore, 'getProperty').callsFake(
+      createStore('name', createPluggable(logReduce)).getProperty)
 
     const root = createAsyncRoot(createAsyncActions, () => <App />)
     root.renderToString().onValue()
@@ -289,8 +318,8 @@ describe('Server Root', () => {
 
   it('should update universal store to render asynchronously', () => {
     const logReduce = sinon.stub()
-    sandbox.stub(UniversalStore, 'getProperty').returns(
-      createStore('universal', createUniversal(logReduce)).getProperty())
+    sandbox.stub(UniversalStore, 'getProperty').callsFake(
+      createStore('universal', createUniversal(logReduce)).getProperty)
 
     const root = createAsyncRoot(createAsyncActions, () => <App />)
     root.renderToString().onValue()
@@ -314,8 +343,8 @@ describe('Server Root', () => {
 
   it('should unsubscribe from universal store after rendering asynchronously', () => {
     const logReduce = sinon.stub()
-    sandbox.stub(UniversalStore, 'getProperty').returns(
-      createStore('universal', createUniversal(logReduce)).getProperty())
+    sandbox.stub(UniversalStore, 'getProperty').callsFake(
+      createStore('universal', createUniversal(logReduce)).getProperty)
 
     const root = createAsyncRoot(createAsyncActions, () => <App />)
     root.renderToString().onValue()

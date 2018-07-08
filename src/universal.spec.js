@@ -1,19 +1,31 @@
 /* eslint-env mocha */
 
+import R from 'ramda'
 import chai from 'chai'
 import sinon from 'sinon'
 import { JSDOM } from 'jsdom'
+import { createDispatcher } from 'bdux'
 import Common from './utils/common-util'
-import UniversalAction, {
-  reloadStates } from './actions/universal-action'
+import ActionTypes from './actions/action-types'
+import { reloadStates } from './actions/universal-action'
 import * as Universal from './universal'
+
+const removeReserved = R.omit(
+  ['id', 'skipLog']
+)
 
 describe('Universal Middleware', () => {
 
-  let sandbox
+  let sandbox, dispatcher, params
 
   beforeEach(() => {
-    sandbox = sinon.sandbox.create()
+    sandbox = sinon.createSandbox()
+    dispatcher = createDispatcher()
+    params = {
+      name: 'name',
+      dispatch: dispatcher.dispatchAction,
+      bindToDispatch: dispatcher.bindToDispatch
+    }
   })
 
   it('should apply middleware after reducer', () => {
@@ -33,7 +45,7 @@ describe('Universal Middleware', () => {
     })
 
     it('should be transparent after reducer', () => {
-      const pluggable = Universal.getPostReduce()
+      const pluggable = Universal.getPostReduce(params)
       const callback = sinon.stub()
       const value = {}
 
@@ -43,22 +55,19 @@ describe('Universal Middleware', () => {
       chai.expect(callback.lastCall.args[0]).to.equal(value)
     })
 
-    it('should start recording after reducer', () => {
-      sandbox.spy(UniversalAction, 'start')
-      Universal.getPostReduce()
-      chai.expect(UniversalAction.start.calledOnce).to.be.true
-    })
-
     it('should record after reducer', () => {
-      sandbox.spy(UniversalAction, 'record')
-      const pluggable = Universal.getPostReduce()
+      const pluggable = Universal.getPostReduce(params)
       const callback = sinon.stub()
       const value = {}
 
-      pluggable.output.onValue(callback)
+      dispatcher.getActionStream().onValue(callback)
+      pluggable.output.onValue()
       pluggable.input.push(value)
-      chai.expect(UniversalAction.record.calledOnce).to.be.true
-      chai.expect(UniversalAction.record.lastCall.args[0]).to.equal(value)
+      chai.expect(callback.calledOnce).to.be.true
+      chai.expect(removeReserved(callback.lastCall.args[0])).to.eql({
+        type: ActionTypes.UNIVERSAL_RECORD,
+        record: {}
+      })
     })
 
     it('should set store default value to be null', () => {
@@ -88,7 +97,7 @@ describe('Universal Middleware', () => {
       })
 
       it('should not start with unknown states after reducer', () => {
-        const pluggable = Universal.getPostReduce('unknown')
+        const pluggable = Universal.getPostReduce(params)
         const callback = sinon.stub()
 
         pluggable.output.toProperty({ nextState: null }).onValue(callback)
@@ -116,7 +125,7 @@ describe('Universal Middleware', () => {
       })
 
       it('should not start with states after reducer', () => {
-        const pluggable = Universal.getPostReduce('empty')
+        const pluggable = Universal.getPostReduce(params)
         const callback = sinon.stub()
 
         pluggable.output.toProperty({ nextState: null }).onValue(callback)

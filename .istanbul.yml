@@ -3,6 +3,7 @@ instrumentation:
     root: src
     extensions:
         - .js
+        - .jsx
     default-excludes: true
     excludes:
       - src/main.js

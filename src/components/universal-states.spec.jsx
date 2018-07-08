@@ -14,7 +14,7 @@ describe('UniversalStates Component', () => {
   let sandbox
 
   beforeEach(() => {
-    sandbox = sinon.sandbox.create()
+    sandbox = sinon.createSandbox()
   })
 
   it('should have id', () => {
