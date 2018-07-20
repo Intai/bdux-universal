@@ -18,25 +18,25 @@ npm install --save bdux-universal
 
 ## Usage
 ```javascript
-import * as Universal from 'bdux-universal';
-import { applyMiddleware } from 'bdux';
+import * as Universal from 'bdux-universal'
+import { applyMiddleware } from 'bdux'
 
 applyMiddleware(
   Universal
-);
+)
 ```
 Then place `<UniversalStates />` in root component to render serialised states.
 ```javascript
-import React from 'react';
-import { UniversalStates } from 'bdux-universal';
+import React from 'react'
+import { UniversalStates } from 'bdux-universal'
 
 const App = () => (
-  <div>
+  <>
     <UniversalStates />
-  </div>
-);
+  </>
+)
 
-export default App;
+export default App
 ```
 
 ## Server rendering
@@ -51,25 +51,25 @@ DefaultRoot.renderToString(req, res)
 
 Example of a server root:
 ```javascript
-import React from 'react';
-import App from '../components/app-react';
-import MessageAction from '../actions/message-action';
-import MessageStore from '../stores/message-store';
-import { resetLocationHistory, LocationStore } from 'bdux-react-router';
-import { createRoot } from 'bdux-universal';
+import React from 'react'
+import App from '../components/app-react'
+import MessageAction from '../actions/message-action'
+import MessageStore from '../stores/message-store'
+import { resetLocationHistory, LocationStore } from 'bdux-react-router'
+import { createRoot } from 'bdux-universal'
 
-export const createElement = (req) => {
-  resetLocationHistory(req.path);
-  MessageAction.message('Message from Server');
-  return <App />;
-};
+export const createElement = ({ dispatch }, req) => {
+  resetLocationHistory(req.path)
+  dispatch(MessageAction.message('Message from Server'))
+  return <App />
+}
 
 export default createRoot(
   createElement, {
     location: LocationStore,
     message: MessageStore
   }
-);
+)
 ```
 Please checkout [Universal](https://github.com/Intai/bdux-examples/tree/master/universal) for a example setup with [Express](http://expressjs.com/) and [webpack](https://webpack.github.io/).
 
@@ -83,20 +83,20 @@ Then use `renderToString` or `renderToNodeStream` function to render the applica
 ```javascript
 let dispose = DefaultRoot.renderToString(req, res)
   .map(renderHtml(res))
-  .onValue(() => dispose());
+  .onValue(() => dispose())
 ```
 
 Example of an asynchronous server root:
 ```javascript
-import R from 'ramda';
-import React from 'react';
-import Bacon from 'baconjs';
-import App from '../components/app-react';
-import WeatherAction from '../actions/weather-action';
-import WeatherStore from '../stores/weather-store';
-import CountryCodesAction from '../actions/country-codes-action';
-import CountryCodesStore from '../stores/country-codes-store';
-import { createAsyncRoot } from 'bdux-universal';
+import R from 'ramda'
+import React from 'react'
+import Bacon from 'baconjs'
+import App from '../components/app-react'
+import WeatherAction from '../actions/weather-action'
+import WeatherStore from '../stores/weather-store'
+import CountryCodesAction from '../actions/country-codes-action'
+import CountryCodesStore from '../stores/country-codes-store'
+import { createAsyncRoot } from 'bdux-universal'
 
 export const createAsyncActions = () => (
   Bacon.when([
@@ -105,11 +105,11 @@ export const createAsyncActions = () => (
   ],
   // map arguments to an array.
   R.unapply(R.identity))
-);
+)
 
 export const createElement = () => (
   <App />
-);
+)
 
 export default createAsyncRoot(
   createAsyncActions,
@@ -117,7 +117,7 @@ export default createAsyncRoot(
     countryCodes: CountryCodesStore,
     weather: WeatherStore
   }
-);
+)
 ```
 Please checkout [Async](https://github.com/Intai/bdux-examples/tree/master/async) for a example setup with [Express](http://expressjs.com/) and [webpack](https://webpack.github.io/).
 
