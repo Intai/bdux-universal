@@ -81,9 +81,9 @@ Server Root can be created using `createAsyncRoot(createAsyncActions, createElem
 
 Then use `renderToString` or `renderToNodeStream` function to render the application into HTML through [ReactDOMServer](https://reactjs.org/docs/react-dom-server.html) asynchronously.
 ```javascript
-let dispose = DefaultRoot.renderToString(req, res)
+DefaultRoot.renderToString(req, res)
   .map(renderHtml(res))
-  .onValue(() => dispose())
+  .subscribe(() => Bacon.noMore)
 ```
 
 Example of an asynchronous server root:
