@@ -1,33 +1,22 @@
 /* eslint-env node */
 
 var gulp = require('gulp'),
-    $ = require('gulp-load-plugins')(),
+    gulpBabel = require('gulp-babel'),
+    gulpEslint = require('gulp-eslint'),
     spawn = require('child_process').spawn,
     srcFiles = './src/**/!(*.spec).{js,jsx}',
     testFiles = './src/**/*.spec.{js,jsx}';
 
-gulp.task('clean', function () {
+function clean(cb) {
   require('del').sync('lib');
-});
+  cb();
+}
 
 gulp.task('cover', function(cb) {
   var cmd = spawn('node', [
-    'node_modules/istanbul/lib/cli.js',
-    'cover',
-    '--root', '.',
-    '-x', '**/*.spec.js',
+    'node_modules/cross-env/dist/bin/cross-env.js', 'NODE_ENV=test',
+    'node_modules/nyc/bin/nyc.js',
     'node_modules/mocha/bin/_mocha',
-    '--', '--opts', '.mocha.opts'
-  ], {
-    stdio: 'inherit'
-  });
-
-  cmd.on('close', cb);
-});
-
-gulp.task('test', function(cb) {
-  var cmd = spawn('node', [
-    'node_modules/mocha/bin/mocha',
     '--opts', '.mocha.opts'
   ], {
     stdio: 'inherit'
@@ -36,30 +25,45 @@ gulp.task('test', function(cb) {
   cmd.on('close', cb);
 });
 
-gulp.task('lint', function () {
-  return gulp.src(srcFiles)
-    .pipe($.eslint())
-    .pipe($.eslint.format())
-    .pipe($.eslint.failAfterError());
-});
+function test(cb) {
+  var cmd = spawn('node', [
+    'node_modules/mocha/bin/mocha',
+    '--opts', '.mocha.opts'
+  ], {
+    stdio: 'inherit'
+  });
 
-gulp.task('babel', function() {
+  cmd.on('close', cb);
+}
+
+function lint() {
   return gulp.src(srcFiles)
-    .pipe($.babel())
+    .pipe(gulpEslint())
+    .pipe(gulpEslint.format())
+    .pipe(gulpEslint.failAfterError());
+}
+
+function babel() {
+  return gulp.src(srcFiles)
+    .pipe(gulpBabel())
     .pipe(gulp.dest('lib'));
-});
+}
 
-gulp.task('watch', function() {
-  gulp.watch([srcFiles, testFiles], ['test']);
-});
+function watch() {
+  gulp.watch([srcFiles, testFiles], test);
+}
 
-gulp.task('build', [
-  'clean',
-  'babel'
-]);
+gulp.task('test', test);
 
-gulp.task('default', [
-  'lint',
-  'test',
-  'watch'
-]);
+gulp.task('lint', lint);
+
+gulp.task('build', gulp.series(
+  clean,
+  babel
+));
+
+gulp.task('default', gulp.series(
+  lint,
+  test,
+  watch
+));

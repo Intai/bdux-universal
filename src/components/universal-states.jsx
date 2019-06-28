@@ -3,7 +3,7 @@ import React from 'react'
 import Common from '../utils/common-util'
 import UniversalStore from '../stores/universal-store'
 import { loadStates } from '../actions/universal-action'
-import { createComponent } from 'bdux'
+import { createUseBdux } from 'bdux'
 
 const canUseDOM = () => (
   Common.canUseDOM()
@@ -30,13 +30,18 @@ const renderStates = R.ifElse(
   stringifyStatesInDOM
 )
 
-/* eslint-disable react/no-danger */
-export const UniversalStates = ({ states }) => (
-  <script id="universal" type="application/json"
-    dangerouslySetInnerHTML={{ __html: renderStates(states) }}>
-  </script>
-)
-
-export default createComponent(UniversalStates, {
+const useBdux = createUseBdux({
   states: UniversalStore
 })
+
+/* eslint-disable react/no-danger */
+export const UniversalStates = (props) => {
+  const { state } = useBdux(props)
+  return (
+    <script id="universal" type="application/json"
+      dangerouslySetInnerHTML={{ __html: renderStates(state.states) }}>
+    </script>
+  )
+}
+
+export default UniversalStates

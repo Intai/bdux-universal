@@ -3,10 +3,12 @@
 import chai from 'chai'
 import sinon from 'sinon'
 import React from 'react'
+import * as Bacon from 'baconjs'
 import { JSDOM } from 'jsdom'
 import { shallow } from 'enzyme'
 import Common from '../utils/common-util'
 import { reloadStates } from '../actions/universal-action'
+import UniversalStore from '../stores/universal-store'
 import { UniversalStates } from './universal-states'
 
 describe('UniversalStates Component', () => {
@@ -23,7 +25,9 @@ describe('UniversalStates Component', () => {
   })
 
   it('should render records', () => {
-    const wrapper = shallow(UniversalStates({ states: { records: [] }}))
+    sandbox.stub(UniversalStore, 'getProperty')
+      .returns(Bacon.constant({ records: [] }))
+    const wrapper = shallow(<UniversalStates />)
     chai.expect(wrapper.prop('dangerouslySetInnerHTML')).to.eql({
       __html: '[]'
     })
@@ -31,7 +35,9 @@ describe('UniversalStates Component', () => {
 
   it('should default to an empty array on server', () => {
     sandbox.stub(Common, 'canUseDOM').returns(false)
-    const wrapper = shallow(UniversalStates({}))
+    sandbox.stub(UniversalStore, 'getProperty')
+      .returns(Bacon.constant({}))
+    const wrapper = shallow(<UniversalStates />)
     chai.expect(wrapper.prop('dangerouslySetInnerHTML')).to.eql({
       __html: '[]'
     })
@@ -49,7 +55,9 @@ describe('UniversalStates Component', () => {
 
     it('should default to an empty array in browser', () => {
       sandbox.stub(Common, 'canUseDOM').returns(true)
-      const wrapper = shallow(UniversalStates({}))
+      sandbox.stub(UniversalStore, 'getProperty')
+        .returns(Bacon.constant({}))
+      const wrapper = shallow(<UniversalStates />)
       chai.expect(wrapper.prop('dangerouslySetInnerHTML')).to.eql({
         __html: '[]'
       })
@@ -72,7 +80,9 @@ describe('UniversalStates Component', () => {
 
     it('should default to the records from server', () => {
       sandbox.stub(Common, 'canUseDOM').returns(true)
-      const wrapper = shallow(UniversalStates({ states: { name: 'test' }}))
+      sandbox.stub(UniversalStore, 'getProperty')
+        .returns(Bacon.constant({ name: 'test' }))
+      const wrapper = shallow(<UniversalStates />)
       chai.expect(wrapper.prop('dangerouslySetInnerHTML')).to.eql({
         __html: '[{"name":"test","nextState":"Message from Server"}]'
       })
