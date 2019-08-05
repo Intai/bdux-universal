@@ -1,4 +1,7 @@
-import * as R from 'ramda'
+import {
+  once,
+  reduce,
+} from 'ramda'
 
 const PREFIX = 'BDUXIS'
 
@@ -15,11 +18,11 @@ const mapToKeyValue = (obj, key) => {
 
 export default {
 
-  canUseDOM: R.once(canUseDOM),
+  canUseDOM: once(canUseDOM),
 
   // map an array of strings to
   // object keys and prefixed values.
-  createObjOfConsts: (values) => R.reduce(
+  createObjOfConsts: (values) => reduce(
     mapToKeyValue, {}, values
   )
 }

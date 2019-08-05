@@ -1,4 +1,14 @@
-import * as R from 'ramda'
+import {
+  append,
+  apply,
+  assoc,
+  map,
+  merge,
+  pipe,
+  prop,
+  forEach,
+  values,
+} from 'ramda'
 import React from 'react'
 import Bacon from 'baconjs'
 import UniversalStore from './stores/universal-store'
@@ -26,24 +36,13 @@ const subscribe = (props) => (store) => (
   store.getProperty(props).onValue()
 )
 
-const hasFuncs = R.allPass([
-  R.is(Array),
-  R.complement(R.isEmpty)
-])
-
-const pipeFuncs = R.ifElse(
-  hasFuncs,
-  R.apply(R.pipe),
-  R.always(R.F)
-)
-
-const activateStores = (props) => R.pipe(
+const activateStores = (props) => pipe(
   // get the array of stores.
-  R.values,
+  values,
   // subscribe to stores.
-  R.map(subscribe(props)),
+  map(subscribe(props)),
   // pipe all dispose functions.
-  pipeFuncs
+  apply(pipe)
 )
 
 const renderElement = (render, createElement, stores) => (...args) => {
@@ -72,35 +71,32 @@ const renderElement = (render, createElement, stores) => (...args) => {
 
 const combineStoreChanges = (props, stores) => (
   Bacon.combineAsArray(
-    R.map(
+    map(
       store => store.getProperty(props).changes(),
-      R.append(
+      append(
         UniversalStore,
-        R.values(stores || {})
+        values(stores || {})
       )
     )
   )
 )
 
-const isAsyncRender = (id) => R.pipe(
-  R.last,
-  R.when(
-    R.identity,
-    R.propEq('asyncRenderId', id)
-  )
-)
+const isAsyncRender = (id) => (changes) => {
+  const lastChange = changes[changes.length - 1]
+  return lastChange && lastChange.asyncRenderId === id
+}
 
 const pushActions = (dispatcher, id) => (actions) => {
   const bus = dispatcher.getActionStream()
-  R.forEach(
-    action => bus.push(R.assoc('id', dispatcher.generateActionId(), action)),
+  forEach(
+    action => bus.push(assoc('id', dispatcher.generateActionId(), action)),
     actions || []
   )
   bus.push(startAsyncRecord(id))
 }
 
 const wrapAsyncElement = (createElement, props, args) => (data) => (
-  R.merge(data, {
+  merge(data, {
     element: (
       <BduxContext.Provider value={props.bdux}>
         {createElement(props, ...args)}
@@ -110,7 +106,7 @@ const wrapAsyncElement = (createElement, props, args) => (data) => (
 )
 
 const wrapAsyncRender = (render) => (data) => (
-  R.merge(data, {
+  merge(data, {
     html: render(data.element)
   })
 )
@@ -127,7 +123,7 @@ const renderAsyncElementToHtml = (render, createAsyncActions, createElement, sto
     // render the element.
     .map(wrapAsyncRender(render))
     // return html string or stream.
-    .map(R.prop('html'))
+    .map(prop('html'))
     .first()
 
   // create asynchronous actions.

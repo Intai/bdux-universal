@@ -1,4 +1,11 @@
-import * as R from 'ramda'
+import {
+  allPass,
+  always,
+  ifElse,
+  is,
+  pipe,
+  propIs,
+} from 'ramda'
 import React from 'react'
 import Common from '../utils/common-util'
 import UniversalStore from '../stores/universal-store'
@@ -9,22 +16,22 @@ const canUseDOM = () => (
   Common.canUseDOM()
 )
 
-const hasRecords = R.allPass([
-  R.is(Object),
-  R.propIs(Array, 'records')
+const hasRecords = allPass([
+  is(Object),
+  propIs(Array, 'records')
 ])
 
 const stringifyRecords = (states) => (
   JSON.stringify(states.records)
 )
 
-const stringifyStatesInDOM = R.ifElse(
+const stringifyStatesInDOM = ifElse(
   canUseDOM,
-  R.pipe(loadStates, JSON.stringify),
-  R.always('[]')
+  pipe(loadStates, JSON.stringify),
+  always('[]')
 )
 
-const renderStates = R.ifElse(
+const renderStates = ifElse(
   hasRecords,
   stringifyRecords,
   stringifyStatesInDOM

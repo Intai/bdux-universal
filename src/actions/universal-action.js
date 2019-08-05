@@ -1,4 +1,16 @@
-import * as R from 'ramda'
+import {
+  allPass,
+  complement,
+  contains,
+  F,
+  flip,
+  ifElse,
+  once,
+  path,
+  pick,
+  pipe,
+  propEq,
+} from 'ramda'
 import ActionTypes from './action-types'
 import StoreNames from '../stores/store-names'
 import Common from '../utils/common-util'
@@ -15,14 +27,14 @@ const parseJson = (json) => {
   }
 }
 
-const isNotUniversalStore = R.complement(
-  R.propEq('name', StoreNames.UNIVERSAL)
+const isNotUniversalStore = complement(
+  propEq('name', StoreNames.UNIVERSAL)
 )
 
-const isNotUniversalAction = R.complement(
-  R.pipe(
-    R.path(['action', 'type']),
-    R.flip(R.contains)([
+const isNotUniversalAction = complement(
+  pipe(
+    path(['action', 'type']),
+    flip(contains)([
       ActionTypes.UNIVERSAL_RECORD,
       ActionTypes.UNIVERSAL_ASYNC_RECORD,
       ActionTypes.UNIVERSAL_ASYNC_RENDER
@@ -30,13 +42,13 @@ const isNotUniversalAction = R.complement(
   )
 )
 
-const shouldRecord = R.allPass([
-  R.complement(canUseDOM),
+const shouldRecord = allPass([
+  complement(canUseDOM),
   isNotUniversalAction,
   isNotUniversalStore
 ])
 
-const cleanRecord = R.pick(
+const cleanRecord = pick(
   ['name', 'nextState']
 )
 
@@ -46,16 +58,16 @@ const createRecord = (record) => ({
   skipLog: true
 })
 
-export const record = R.ifElse(
+export const record = ifElse(
   // dont record universal related store state.
   shouldRecord,
   // record the store state.
   createRecord,
-  R.F
+  F
 )
 
 const createLoadStates = () => (
-  R.once(() => {
+  once(() => {
     // states recorded on server side.
     const element = document.getElementById('universal')
     return (element && parseJson(element.innerHTML)) || []
