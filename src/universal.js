@@ -3,7 +3,7 @@ import {
   propEq,
   propOr,
 } from 'ramda'
-import Bacon from 'baconjs'
+import * as Bacon from 'baconjs'
 import Common from './utils/common-util'
 import { record } from './actions/universal-action'
 import { loadStates } from './actions/universal-action'

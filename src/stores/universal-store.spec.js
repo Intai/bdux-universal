@@ -2,7 +2,7 @@
 
 import chai from 'chai'
 import sinon from 'sinon'
-import Bacon from 'baconjs'
+import * as Bacon from 'baconjs'
 import { createDispatcher } from 'bdux'
 import ActionTypes from '../actions/action-types'
 import UniversalStore, { getReducer } from './universal-store'

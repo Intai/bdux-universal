@@ -10,7 +10,7 @@ import {
   values,
 } from 'ramda'
 import React from 'react'
-import Bacon from 'baconjs'
+import * as Bacon from 'baconjs'
 import UniversalStore from './stores/universal-store'
 import { startAsyncRecord } from './actions/universal-action'
 import { renderToString, renderToNodeStream } from 'react-dom/server'
