@@ -1,6 +1,6 @@
 {
   "name": "bdux-universal",
-  "version": "16.8.3",
+  "version": "16.13.0",
   "description": "A Bdux Middleware",
   "module": "es/index.js",
   "main": "lib/index.js",
