@@ -2,9 +2,9 @@
 
 A [Bdux](https://github.com/Intai/bdux) middleware for Universal (isomorphic) JavaScript.
 
-[![Build Status](https://travis-ci.org/Intai/bdux-universal.svg?branch=master)](https://travis-ci.org/Intai/bdux-universal)
+[![Build Status](https://travis-ci.com/Intai/bdux-universal.svg?branch=master)](https://travis-ci.com/Intai/bdux-universal)
 [![Coverage Status](https://coveralls.io/repos/github/Intai/bdux-universal/badge.svg?branch=master)](https://coveralls.io/github/Intai/bdux-universal?branch=master)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e8a1e446f73441d594db7653367c17e5)](https://www.codacy.com/app/intai-hg/bdux-universal?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Intai/bdux-universal&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ca4837a2437a459e9e75ea798cf7d225)](https://www.codacy.com/gh/Intai/bdux-universal/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Intai/bdux-universal&amp;utm_campaign=Badge_Grade)
 
 ## Want to achieve
 - Render the same [React](https://facebook.github.io/react/) app on both the client and the server.
@@ -104,7 +104,7 @@ export const createAsyncActions = () => (
     WeatherAction.searchWeather('NZ', 'Auckland').last()
   ],
   // map arguments to an array.
-  R.unapply(R.identity))
+  (...args) => args
 )
 
 export const createElement = () => (
