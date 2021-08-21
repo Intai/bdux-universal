@@ -2,7 +2,7 @@
 
 A [Bdux](https://github.com/Intai/bdux) middleware for Universal (isomorphic) JavaScript.
 
-[![Build Status](https://travis-ci.com/Intai/bdux-universal.svg?branch=master)](https://travis-ci.com/Intai/bdux-universal)
+[![Build Status](https://app.travis-ci.com/Intai/bdux-universal.svg?branch=master)](https://app.travis-ci.com/Intai/bdux-universal)
 [![Coverage Status](https://coveralls.io/repos/github/Intai/bdux-universal/badge.svg?branch=master)](https://coveralls.io/github/Intai/bdux-universal?branch=master)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ca4837a2437a459e9e75ea798cf7d225)](https://www.codacy.com/gh/Intai/bdux-universal/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Intai/bdux-universal&amp;utm_campaign=Badge_Grade)
 
