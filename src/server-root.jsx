@@ -10,7 +10,7 @@ import {
   values,
 } from 'ramda'
 import React from 'react'
-import * as Bacon from 'baconjs'
+import { combineAsArray } from 'baconjs'
 import UniversalStore from './stores/universal-store'
 import { startAsyncRecord } from './actions/universal-action'
 import { renderToString, renderToNodeStream } from 'react-dom/server'
@@ -70,7 +70,7 @@ const renderElement = (render, createElement, stores) => (...args) => {
 }
 
 const combineStoreChanges = (props, stores) => (
-  Bacon.combineAsArray(
+  combineAsArray(
     map(
       store => store.getProperty(props).changes(),
       append(

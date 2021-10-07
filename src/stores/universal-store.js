@@ -9,7 +9,7 @@ import {
   reject,
   when,
 } from 'ramda'
-import * as Bacon from 'baconjs'
+import { Bus } from 'baconjs'
 import ActionTypes from '../actions/action-types'
 import StoreNames from '../stores/store-names'
 import { startAsyncRender } from '../actions/universal-action'
@@ -82,7 +82,7 @@ const createAsyncRender = when(
 )
 
 export const getReducer = () => {
-  const reducerStream = new Bacon.Bus()
+  const reducerStream = new Bus()
 
   return {
     input: reducerStream,
