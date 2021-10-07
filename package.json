@@ -5,6 +5,7 @@
   "module": "es/index.js",
   "main": "lib/index.js",
   "exports": {
+    ".": "es/index.js",
     "./has-universal-states": "es/actions/has-universal-states.js"
   },
   "scripts": {
