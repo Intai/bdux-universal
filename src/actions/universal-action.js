@@ -76,10 +76,6 @@ const createLoadStates = () => (
 
 let loadStatesOnce = createLoadStates()
 
-export const hasUniversalStates = () => (
-  Common.canUseDOM() && !!document.getElementById('universal')
-)
-
 export const loadStates = () => (
   loadStatesOnce()
 )

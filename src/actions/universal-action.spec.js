@@ -6,13 +6,14 @@ import { JSDOM } from 'jsdom'
 import ActionTypes from './action-types'
 import StoreNames from '../stores/store-names'
 import Common from '../utils/common-util'
+import { hasUniversalStates } from './has-universal-states'
 import {
   record,
   loadStates,
   reloadStates,
-  hasUniversalStates,
   startAsyncRecord,
-  startAsyncRender } from './universal-action'
+  startAsyncRender,
+} from './universal-action'
 
 describe('Universal Action', () => {
 
