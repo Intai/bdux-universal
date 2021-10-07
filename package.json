@@ -5,9 +5,7 @@
   "module": "es/index.js",
   "main": "lib/index.js",
   "exports": {
-    "import": {
-      "./has-universal-states": "es/actions/has-universal-states.js"
-    }
+    "./has-universal-states": "es/actions/has-universal-states.js"
   },
   "scripts": {
     "test": "gulp cover",
