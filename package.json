@@ -16,6 +16,10 @@
     "./middleware": {
       "import": "./es/universal.js",
       "require": "./lib/universal.js"
+    },
+    "./states": {
+      "import": "./es/components/universal-states.js",
+      "require": "./lib/components/universal-states.js"
     }
   },
   "scripts": {
