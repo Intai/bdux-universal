@@ -12,6 +12,10 @@
     "./has-universal-states": {
       "import": "./es/actions/has-universal-states.js",
       "require": "./lib/actions/has-universal-states.js"
+    },
+    "./middleware": {
+      "import": "./es/universal.js",
+      "require": "./lib/universal.js"
     }
   },
   "scripts": {
