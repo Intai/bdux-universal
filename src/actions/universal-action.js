@@ -1,10 +1,10 @@
 import {
   allPass,
   complement,
-  contains,
   F,
   flip,
   ifElse,
+  includes,
   once,
   path,
   pick,
@@ -34,7 +34,7 @@ const isNotUniversalStore = complement(
 const isNotUniversalAction = complement(
   pipe(
     path(['action', 'type']),
-    flip(contains)([
+    flip(includes)([
       ActionTypes.UNIVERSAL_RECORD,
       ActionTypes.UNIVERSAL_ASYNC_RECORD,
       ActionTypes.UNIVERSAL_ASYNC_RENDER

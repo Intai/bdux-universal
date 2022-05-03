@@ -3,7 +3,7 @@ import {
   apply,
   assoc,
   map,
-  merge,
+  mergeRight,
   pipe,
   prop,
   forEach,
@@ -13,7 +13,7 @@ import React from 'react'
 import { combineAsArray } from 'baconjs'
 import UniversalStore from './stores/universal-store'
 import { startAsyncRecord } from './actions/universal-action'
-import { renderToString, renderToNodeStream } from 'react-dom/server'
+import { renderToString, renderToPipeableStream } from 'react-dom/server'
 import { BduxContext, createDispatcher } from 'bdux'
 
 const createContext = () => {
@@ -96,7 +96,7 @@ const pushActions = (dispatcher, id) => (actions) => {
 }
 
 const wrapAsyncElement = (createElement, props, args) => (data) => (
-  merge(data, {
+  mergeRight(data, {
     element: (
       <BduxContext.Provider value={props.bdux}>
         {createElement(props, ...args)}
@@ -106,7 +106,7 @@ const wrapAsyncElement = (createElement, props, args) => (data) => (
 )
 
 const wrapAsyncRender = (render) => (data) => (
-  merge(data, {
+  mergeRight(data, {
     html: render(data.element)
   })
 )
@@ -138,10 +138,10 @@ const renderAsyncElementToHtml = (render, createAsyncActions, createElement, sto
 export const createRoot = (...args) => ({
   // create and render the element.
   renderToString: renderElement(renderToString, ...args),
-  renderToNodeStream: renderElement(renderToNodeStream, ...args)
+  renderToPipeableStream: renderElement(renderToPipeableStream, ...args)
 })
 
 export const createAsyncRoot = (...args) => ({
   renderToString: renderAsyncElementToHtml(renderToString, ...args),
-  renderToNodeStream: renderAsyncElementToHtml(renderToNodeStream, ...args)
+  renderToPipeableStream: renderAsyncElementToHtml(renderToPipeableStream, ...args)
 })
