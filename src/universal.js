@@ -27,6 +27,6 @@ export const getPostReduce = ({ bindToDispatch }) => {
 
 export const getDefaultValue = (name, prev) => (
   Common.canUseDOM()
-    ? findRecordToStartWith(name)
+    ? (findRecordToStartWith(name) || prev)
     : prev
 )
