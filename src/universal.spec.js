@@ -140,6 +140,11 @@ describe('Universal Middleware', () => {
         chai.expect(defaultValue).to.be.null
       })
 
+      it('should pass the previous default value', () => {
+        const defaultValue = Universal.getDefaultValue('test', 'previous')
+        chai.expect(defaultValue).to.equal('previous')
+      })
+
     })
 
   })
